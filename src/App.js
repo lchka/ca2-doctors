@@ -37,8 +37,8 @@ const App = () => {
                             <Route path="/doctors" element={<Doctors />} />
                             {/* Patient routes */}
                             <Route path="/patients" element={<Patients />} />
-                            <Route path="/patient/create" element={<CreatePatient />} />
-                            <Route path="/patient/:id/edit" element={<EditPatient />} /> {/* Correcting the route for editing a patient */}
+                            <Route path="/patients/create" element={<CreatePatient />}></Route>
+                            <Route path="/patients/:id/edit" element={<EditPatient />} /> {/* Correcting the route for editing a patient */}
                             <Route path="/patient/:id" element={<SinglePatient />} /> {/* Correcting the route for viewing a single patient */}
                             <Route path="/login" element={<LoginForm />} />
                             <Route path="/register" element={<RegisterForm />} />
