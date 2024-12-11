@@ -1,47 +1,21 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axios from 'axios';
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Form, Button, Container, Alert } from 'react-bootstrap';
 import { useAuth } from '../../utils/useAuth';
 
-const Edit = () => {
+const Create = () => {
     const [form, setForm] = useState({
         first_name: '',
         last_name: '',
         email: '',
         phone: '',
-        specialisation: ''
+        date_of_birth: '',
+        address: ''
     });
     const [error, setError] = useState(null);
     const navigate = useNavigate();
-    const { id } = useParams();
     const { token } = useAuth();
-
-    const specialisations = [
-        "Podiatrist",
-        "Dermatologist",
-        "Pediatrician",
-        "Psychiatrist",
-        "General Practitioner"
-    ];
-
-    useEffect(() => {
-        // Fetch the doctor's details to populate the form
-        const fetchDoctor = async () => {
-            try {
-                const response = await axios.get(`https://fed-medical-clinic-api.vercel.app/doctors/${id}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-                setForm(response.data);
-            } catch (error) {
-                console.error('Error fetching doctor:', error);
-            }
-        };
-
-        fetchDoctor();
-    }, [id, token]);
 
     const handleChange = (e) => {
         setForm({
@@ -53,20 +27,20 @@ const Edit = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.patch(`https://fed-medical-clinic-api.vercel.app/doctors/${id}`, form, {
+            await axios.post('https://fed-medical-clinic-api.vercel.app/patients', form, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
-            navigate(`/doctor/${id}`, { replace: true });
+            navigate('/patients'); // Navigate to "Our Patients" page after successful creation
         } catch (err) {
-            setError('Error updating doctor');
+            setError('Error creating patient');
         }
     };
 
     return (
         <Container className="mt-4">
-            <h1>Edit Doctor</h1>
+            <h1>Create Patient</h1>
             {error && <Alert variant="danger">{error}</Alert>}
             <Form onSubmit={handleSubmit}>
                 <Form.Group controlId="formFirstName">
@@ -113,29 +87,34 @@ const Edit = () => {
                     />
                 </Form.Group>
 
-                <Form.Group controlId="formSpecialisation">
-                    <Form.Label>Specialisation</Form.Label>
+                <Form.Group controlId="formDateOfBirth">
+                    <Form.Label>Date of Birth</Form.Label>
                     <Form.Control
-                        as="select"
-                        name="specialisation"
-                        value={form.specialisation}
+                        type="text"
+                        placeholder="Enter date of birth"
+                        name="date_of_birth"
+                        value={form.date_of_birth}
                         onChange={handleChange}
-                    >
-                        <option value="">Select specialisation</option>
-                        {specialisations.map((specialisation) => (
-                            <option key={specialisation} value={specialisation}>
-                                {specialisation}
-                            </option>
-                        ))}
-                    </Form.Control>
+                    />
+                </Form.Group>
+
+                <Form.Group controlId="formAddress">
+                    <Form.Label>Address</Form.Label>
+                    <Form.Control
+                        type="text"
+                        placeholder="Enter address"
+                        name="address"
+                        value={form.address}
+                        onChange={handleChange}
+                    />
                 </Form.Group>
 
                 <Button variant="primary" type="submit" className="mt-3">
-                    Update
+                    Create
                 </Button>
             </Form>
         </Container>
     );
 };
 
-export default Edit;
+export default Create;

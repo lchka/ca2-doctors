@@ -10,37 +10,30 @@ const Edit = () => {
         last_name: '',
         email: '',
         phone: '',
-        specialisation: ''
+        date_of_birth: '',
+        address: ''
     });
     const [error, setError] = useState(null);
     const navigate = useNavigate();
     const { id } = useParams();
     const { token } = useAuth();
 
-    const specialisations = [
-        "Podiatrist",
-        "Dermatologist",
-        "Pediatrician",
-        "Psychiatrist",
-        "General Practitioner"
-    ];
-
     useEffect(() => {
-        // Fetch the doctor's details to populate the form
-        const fetchDoctor = async () => {
+        // Fetch the patient's details to populate the form
+        const fetchPatient = async () => {
             try {
-                const response = await axios.get(`https://fed-medical-clinic-api.vercel.app/doctors/${id}`, {
+                const response = await axios.get(`https://fed-medical-clinic-api.vercel.app/patients/${id}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
                 });
                 setForm(response.data);
             } catch (error) {
-                console.error('Error fetching doctor:', error);
+                console.error('Error fetching patient:', error);
             }
         };
 
-        fetchDoctor();
+        fetchPatient();
     }, [id, token]);
 
     const handleChange = (e) => {
@@ -53,20 +46,20 @@ const Edit = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.patch(`https://fed-medical-clinic-api.vercel.app/doctors/${id}`, form, {
+            await axios.patch(`https://fed-medical-clinic-api.vercel.app/patients/${id}`, form, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
-            navigate(`/doctor/${id}`, { replace: true });
+            navigate('/patients'); // Navigate to "Our Patients" page after successful update
         } catch (err) {
-            setError('Error updating doctor');
+            setError('Error updating patient');
         }
     };
 
     return (
         <Container className="mt-4">
-            <h1>Edit Doctor</h1>
+            <h1>Edit Patient</h1>
             {error && <Alert variant="danger">{error}</Alert>}
             <Form onSubmit={handleSubmit}>
                 <Form.Group controlId="formFirstName">
@@ -113,21 +106,26 @@ const Edit = () => {
                     />
                 </Form.Group>
 
-                <Form.Group controlId="formSpecialisation">
-                    <Form.Label>Specialisation</Form.Label>
+                <Form.Group controlId="formDateOfBirth">
+                    <Form.Label>Date of Birth</Form.Label>
                     <Form.Control
-                        as="select"
-                        name="specialisation"
-                        value={form.specialisation}
+                        type="text"
+                        placeholder="Enter date of birth"
+                        name="date_of_birth"
+                        value={form.date_of_birth}
                         onChange={handleChange}
-                    >
-                        <option value="">Select specialisation</option>
-                        {specialisations.map((specialisation) => (
-                            <option key={specialisation} value={specialisation}>
-                                {specialisation}
-                            </option>
-                        ))}
-                    </Form.Control>
+                    />
+                </Form.Group>
+
+                <Form.Group controlId="formAddress">
+                    <Form.Label>Address</Form.Label>
+                    <Form.Control
+                        type="text"
+                        placeholder="Enter address"
+                        name="address"
+                        value={form.address}
+                        onChange={handleChange}
+                    />
                 </Form.Group>
 
                 <Button variant="primary" type="submit" className="mt-3">
