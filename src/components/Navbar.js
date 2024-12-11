@@ -16,7 +16,12 @@ const CustomNavbar = () => {
                     <BootstrapNavbar.Collapse id="basic-navbar-nav">
                         <Nav className="me-auto">
                             <Nav.Link as={Link} to="/" className="fs-5">Home</Nav.Link>
-                            <Nav.Link as={Link} to="/register" className="fs-5">Register</Nav.Link>
+                            {token && (
+                                <Nav.Link as={Link} to="/doctor/create" className="fs-5">Add Doctor</Nav.Link>
+                            )}
+                            {!token && (
+                                <Nav.Link as={Link} to="/register" className="fs-5">Register</Nav.Link>
+                            )}
                         </Nav>
                         <Nav>
                             {token ? (

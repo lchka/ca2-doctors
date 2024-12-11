@@ -3,6 +3,7 @@ import { createContext } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Container } from 'react-bootstrap';
 
+import 'bootstrap/dist/css/bootstrap.min.css';
 import CustomNavbar from './components/Navbar';
 import LoginForm from "./components/LoginForm";
 import RegisterForm from "./components/RegisterForm";

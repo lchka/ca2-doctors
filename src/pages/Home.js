@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import axios from 'axios';
 import { useLocation, useNavigate } from "react-router-dom";
 import { Card, Button, Container, Row, Col, Alert } from 'react-bootstrap';
+import { useAuth } from '../utils/useAuth';
+import doctorImage from '../images/doctor.jpg'; // Importing the image
 
 const Home = () => {
     const [doctors, setDoctors] = useState([]);
-
+    const { token } = useAuth();
     const navigate = useNavigate();
 
     // We saw in a previous class how our ProtectedRoute checks for authorisation
@@ -27,21 +29,29 @@ const Home = () => {
     }, []);
 
     return (
-        <Container>
+        <Container className="mt-4">
             {msg && <Alert variant="info">{msg}</Alert>}
             <Row>
                 {doctors.map((doctor) => (
-                    <Col key={doctor.id} sm={12} md={6} lg={4}>
-                        <Card className="mb-3">
+                    <Col key={doctor.id} sm={12} md={6} lg={3}>
+                        <Card className="mb-3 rounded">
+                            <Card.Img variant="top" src={doctorImage} alt="Doctor" />
                             <Card.Body>
-                                <Card.Title>{doctor.first_name} {doctor.last_name}</Card.Title>
-                                <Card.Text>{doctor.specialisation}</Card.Text>
+                                <Card.Title className="fs-4 fw-bold">{doctor.first_name} {doctor.last_name}</Card.Title>
+                                <Card.Text className="fs-5">{doctor.specialisation}</Card.Text>
                                 <Button variant="primary" onClick={() => navigate(`/doctor/${doctor.id}`)}>View Details</Button>
                             </Card.Body>
                         </Card>
                     </Col>
                 ))}
             </Row>
+            {!token && (
+                <Row className="mt-4">
+                    <Col>
+                        <Button variant="success" onClick={() => navigate('/register')}>Register</Button>
+                    </Col>
+                </Row>
+            )}
         </Container>
     );
 };
