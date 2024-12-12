@@ -22,6 +22,10 @@ import Prescriptions from './pages/prescriptions/Prescriptions'; // Updated Pres
 import SinglePrescription from './pages/prescriptions/SinglePrescription'; // Importing the SinglePrescription component
 import EditPrescription from './pages/prescriptions/Edit'; // Importing the EditPrescription component
 import CreatePrescription from './pages/prescriptions/Create'; // Importing the CreatePrescription component
+import Diagnoses from './pages/diagnoses/Diagnoses'; // Importing the Diagnoses component
+import SingleDiagnose from './pages/diagnoses/SingleDiagnose'; // Importing the SingleDiagnose component
+import EditDiagnose from './pages/diagnoses/Edit'; // Importing the EditDiagnose component
+import CreateDiagnose from './pages/diagnoses/Create'; // Importing the CreateDiagnose component
 
 export const UserContext = createContext();
 
@@ -49,6 +53,11 @@ const App = () => {
                             <Route path="/prescriptions/create" element={<CreatePrescription />} /> {/* Adding the route for creating a prescription */}
                             <Route path="/prescriptions/:id" element={<SinglePrescription />} /> {/* Adding the route for viewing a single prescription */}
                             <Route path="/prescriptions/:id/edit" element={<EditPrescription />} /> {/* Adding the route for editing a prescription */}
+                            {/* Diagnosis routes */}
+                            <Route path="/diagnoses" element={<Diagnoses />} /> {/* Adding the route for viewing diagnoses */}
+                            <Route path="/diagnoses/create" element={<CreateDiagnose />} /> {/* Adding the route for creating a diagnosis */}
+                            <Route path="/diagnoses/:id" element={<SingleDiagnose />} /> {/* Adding the route for viewing a single diagnosis */}
+                            <Route path="/diagnoses/:id/edit" element={<EditDiagnose />} /> {/* Adding the route for editing a diagnosis */}
                             {/* Authentication routes */}
                             <Route path="/login" element={<LoginForm />} />
                             <Route path="/register" element={<RegisterForm />} />

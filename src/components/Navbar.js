@@ -17,7 +17,8 @@ const CustomNavbar = () => {
                         <Nav.Link as={Link} to="/" className="fs-5">Home</Nav.Link>
                         <Nav.Link as={Link} to="/doctors" className="fs-5">Our Doctors</Nav.Link>
                         <Nav.Link as={Link} to="/patients" className="fs-5">Our Patients</Nav.Link>
-                        <Nav.Link as={Link} to="/prescriptions" className="fs-5">Prescriptions</Nav.Link> {/* Adding the link for Prescriptions */}
+                        <Nav.Link as={Link} to="/prescriptions" className="fs-5">Prescriptions</Nav.Link>
+                        <Nav.Link as={Link} to="/diagnoses" className="fs-5">Diagnoses</Nav.Link> {/* Adding the link for Diagnoses */}
                         {!token && (
                             <Nav.Link as={Link} to="/register" className="fs-5">Register</Nav.Link>
                         )}
