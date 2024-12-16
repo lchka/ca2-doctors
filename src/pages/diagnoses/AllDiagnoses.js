@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
-import { Container, Row, Col, Card, Button, Alert } from "react-bootstrap";
+import { Container, Row, Col, Card, Button, Alert, Collapse } from "react-bootstrap";
 import { useAuth } from "../../utils/useAuth";
 
 const AllDiagnoses = () => {
   const { token } = useAuth();
   const { id } = useParams(); // id is the patient ID from the URL
-  const [diagnosis, setDiagnosis] = useState([]);
+  const [diagnoses, setDiagnoses] = useState([]);
   const [error, setError] = useState(null);
+  const [expandedPrescriptions, setExpandedPrescriptions] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -47,15 +48,15 @@ const AllDiagnoses = () => {
                 (p) => p.patient_id === parseInt(id)
               );
 
-              return { ...d, prescription: prescriptionData[0] || null };
+              return { ...d, prescriptions: prescriptionData };
             } catch (err) {
               console.error(`Error fetching prescription for diagnosis ${d.id}:`, err);
-              return { ...d, prescription: null };
+              return { ...d, prescriptions: [] };
             }
           })
         );
 
-        setDiagnosis(prescriptions);
+        setDiagnoses(prescriptions);
       } catch (error) {
         console.error("Error fetching diagnoses or prescriptions:", error);
         setError("Error fetching diagnoses or prescriptions");
@@ -65,30 +66,82 @@ const AllDiagnoses = () => {
     fetchDiagnoses();
   }, [id, token]);
 
+  const handlePrescriptionToggle = (prescriptionId) => {
+    setExpandedPrescriptions((prevState) => ({
+      ...prevState,
+      [prescriptionId]: !prevState[prescriptionId],
+    }));
+  };
+
   return (
     <Container className="mt-4">
       {error && <Alert variant="danger">{error}</Alert>}
       <Row>
         <Col md={12}>
           <h1>All Diagnoses</h1>
-          {diagnosis.length > 0 ? (
-            diagnosis.map((d) => (
+          {diagnoses.length > 0 ? (
+            diagnoses.map((d) => (
               <Card className="mb-3" key={d.id}>
                 <Card.Body>
                   <Card.Title>Condition: {d.condition}</Card.Title>
                   <Card.Text>Diagnosis Date: {d.diagnosis_date}</Card.Text>
-                  {d.prescription ? (
-                    <>
-                      <Card.Text>Medication: {d.prescription.medication}</Card.Text>
-                      <Card.Text>Dosage: {d.prescription.dosage}</Card.Text>
-                      <Card.Text>Doctor ID: {d.prescription.doctor_id}</Card.Text>
-                      <Card.Text>
-                        Prescription Period: {d.prescription.start_date} to {d.prescription.end_date}
-                      </Card.Text>
-                    </>
+
+                  {d.prescriptions.length > 0 ? (
+                    <div>
+                      <h6>Prescriptions</h6>
+                      {d.prescriptions.map((prescription) => (
+                        <div key={prescription.id}>
+                          <p>
+                            <strong>Medication:</strong> {prescription.medication}
+                          </p>
+                          <Button
+                            variant="link"
+                            onClick={() => handlePrescriptionToggle(prescription.id)}
+                          >
+                            {expandedPrescriptions[prescription.id]
+                              ? "View Less"
+                              : "View More"}
+                          </Button>
+                          <Collapse in={expandedPrescriptions[prescription.id]}>
+                            <div>
+                              <p>
+                                <strong>Dosage:</strong> {prescription.dosage}
+                              </p>
+                              <p>
+                                <strong>Doctor:</strong> {prescription.doctor_id}
+                              </p>
+                              <p>
+                                <strong>Prescription Period:</strong> {prescription.start_date} to {prescription.end_date}
+                              </p>
+                              <div>
+                                <Button
+                                  variant="warning"
+                                  onClick={() =>
+                                    navigate(`/prescriptions/${prescription.id}/edit`)
+                                  }
+                                >
+                                  Edit Prescription
+                                </Button>
+                                <Button
+                                  variant="danger"
+                                  onClick={() =>
+                                    // Delete prescription logic here
+                                    console.log(`Deleting prescription ${prescription.id}`)
+                                  }
+                                  className="ms-2"
+                                >
+                                  Delete Prescription
+                                </Button>
+                              </div>
+                            </div>
+                          </Collapse>
+                        </div>
+                      ))}
+                    </div>
                   ) : (
                     <Card.Text>No prescription available</Card.Text>
                   )}
+
                   <Button
                     variant="primary"
                     onClick={() => navigate(`/diagnoses/${d.id}/edit`)}

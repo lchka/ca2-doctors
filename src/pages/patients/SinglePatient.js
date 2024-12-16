@@ -93,16 +93,29 @@ const SinglePatient = () => {
 
     fetchPatientData();
   }, [id, token]);
-
   const formatDate = (timestamp) => {
     if (typeof timestamp !== "number") {
       console.error("Invalid timestamp:", timestamp);
       return "Invalid Date";
     }
-
-    const date = new Date(timestamp * 1000);
-    return date.toLocaleDateString();
+  
+    console.log("Received timestamp:", timestamp); // Log the timestamp
+  
+    const date = new Date(timestamp * 1000); // Convert from seconds to milliseconds
+  
+    if (isNaN(date.getTime())) {
+      console.error("Invalid Date object:", date);
+      return "Invalid Date";
+    }
+  
+    const year = date.getFullYear().toString().slice(2); // Get the last two digits of the year
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Get month and pad to 2 digits
+    const day = String(date.getDate()).padStart(2, '0'); // Get day and pad to 2 digits
+    
+    return `${month}-${day}-${year}`; // Format as MM-DD-YY
   };
+  
+  
 
   const handlePrescriptionToggle = (prescriptionId) => {
     setExpandedPrescriptions((prevState) => ({
@@ -170,7 +183,7 @@ const SinglePatient = () => {
                 <p className="fs-5"><strong>Email:</strong> {patient.email}</p>
                 <p className="fs-5">Phone: {patient.phone}</p>
                 <p className="fs-5">Date of Birth: {formatDate(patient.date_of_birth)}</p>
-                <p className="fs-5" >Address: {patient.address}</p>
+                <p className="fs-5">Address: {patient.address}</p>
               </div>
               {/* Patient Image */}
               <div className="w-25">
@@ -197,13 +210,13 @@ const SinglePatient = () => {
             <div className="mt-3">
               <Button
                 variant="secondary"
-                onClick={() => navigate(`/diagnoses/add/${id}`)}
+                onClick={() => navigate(`/diagnoses/create?patient_id=${id}`)}
               >
                 Add Diagnosis
               </Button>
             </div>
             {diagnoses && diagnoses.length > 0 ? (
-              diagnoses.map((d) => {
+              diagnoses.slice(0, 2).map((d) => {
                 const diagnosisPrescriptions = prescriptions.filter(
                   (prescription) => prescription.diagnosis_id === d.id
                 );
@@ -221,8 +234,7 @@ const SinglePatient = () => {
                         <Button
                           variant="secondary"
                           onClick={() =>
-                            navigate(`/prescriptions/create/${id}/${d.id}`)
-
+                            navigate(`/prescriptions/create?patient_id=${id}&diagnosis_id=${d.id}`)
                           }
                         >
                           Add Prescription
@@ -230,7 +242,7 @@ const SinglePatient = () => {
                         <Button
                           variant="warning"
                           onClick={() =>
-                            navigate(`/diagnoses/edit/${id}/${d.id}`)
+                            navigate(`/diagnoses/${d.id}/edit?patient_id=${id}`)
                           }
                         >
                           Edit Diagnosis
@@ -252,8 +264,7 @@ const SinglePatient = () => {
                           {diagnosisPrescriptions.map((prescription) => (
                             <div key={prescription.id}>
                               <p>
-                                <strong>Medication:</strong>{" "}
-                                {prescription.medication}
+                                <strong>Medication:</strong> {prescription.medication}
                               </p>
                               <Button
                                 variant="link"
@@ -270,27 +281,38 @@ const SinglePatient = () => {
                               >
                                 <div>
                                   <p>
-                                    <strong>Dosage:</strong>{" "}
-                                    {prescription.dosage}
+                                    <strong>Dosage:</strong> {prescription.dosage}
                                   </p>
                                   <p>
                                     <strong>Doctor:</strong>{" "}
-                                    {doctors[prescription.doctor_id] ||
-                                      "Unknown"}
+                                    {doctors[prescription.doctor_id] || "Unknown"}
                                   </p>
                                   <p>
                                     <strong>Prescription Period:</strong>{" "}
                                     {formatDate(prescription.start_date)} to{" "}
                                     {formatDate(prescription.end_date)}
                                   </p>
-                                  <Button
-                                    variant="danger"
-                                    onClick={() =>
-                                      handleDeletePrescription(prescription.id)
-                                    }
-                                  >
-                                    Delete Prescription
-                                  </Button>
+                                  <div>
+                                    {/* Edit Prescription Button */}
+                                    <Button
+                                      variant="warning"
+                                      onClick={() =>
+                                        navigate(`/prescriptions/${prescription.id}/edit`)
+                                      }
+                                    >
+                                      Edit Prescription
+                                    </Button>
+                                    {/* Delete Prescription Button */}
+                                    <Button
+                                      variant="danger"
+                                      onClick={() =>
+                                        handleDeletePrescription(prescription.id)
+                                      }
+                                      className="ms-2"
+                                    >
+                                      Delete Prescription
+                                    </Button>
+                                  </div>
                                 </div>
                               </Collapse>
                             </div>
@@ -305,6 +327,16 @@ const SinglePatient = () => {
               })
             ) : (
               <p>No diagnoses available.</p>
+            )}
+
+            {/* View More Diagnoses Button */}
+            {diagnoses.length > 2 && (
+              <Button
+                variant="primary"
+                onClick={() => navigate(`/patients/${id}/diagnoses`)}
+              >
+                View More Diagnoses
+              </Button>
             )}
           </div>
         </Col>
