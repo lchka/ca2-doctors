@@ -1,0 +1,38 @@
+@mixin arrowTextHover {
+    position: relative;
+    overflow: hidden;
+    .arrowRounded {
+      transition: transform 0.4s ease;
+    }
+    .contentText {
+      transition: transform 0.4s ease;
+    }
+  }
+  
+  .orderNow {
+    @include arrowTextHover;
+  
+    /* Blue background for the button */
+    background-color: #81beff; /* Blue background */
+    color: white; /* White text color */
+    border: none; /* Remove border */
+    
+    &:hover {
+      /* Arrow and text transform */
+      .arrowRounded {
+        transform: translateX(540%);
+      }
+  
+      .contentText {
+        transform: translateX(-20%);
+      }
+  
+      /* Keep the background color blue and text white on hover */
+      background-color: #3295ff; /* Keep it blue */
+      color: white; /* Keep text white */
+    }
+  
+    /* Optional: Round the corners for a smooth appearance */
+    border-radius: 50px;
+  }
+  

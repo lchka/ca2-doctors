@@ -1,0 +1,38 @@
+/* Apply background to the whole page or the top-level wrapper */
+body {
+    background-image: url('../images/background2.png'); /* Replace with your image path */
+    background-size: cover;
+    background-position: center center;
+    background-attachment: fixed; /* Optional: makes the background image fixed while scrolling */
+    min-height: 100vh; /* Ensures the background covers the whole viewport */
+  }
+  
+  /* Optional: Add padding/margin if needed */
+  .home-container {
+    padding-top: 60px; /* Adjust this based on your navbar height */
+  }
+  
+  
+  
+.gradient-text {
+    background: linear-gradient(to right, rgb(56, 146, 255), rgb(190, 222, 251));
+    -webkit-background-clip: text;
+    background-clip:text;
+    color: transparent;
+  }
+  
+  /* Make the text bold and add some spacing */
+  .font-weight-bold {
+    font-weight: bold;
+  }
+  
+  /* Optional: Add some margin and padding for the heading */
+  h1 {
+    margin-bottom: 20px;
+  }
+  
+  /* Optional: You can customize other elements */
+  p {
+    font-size: 1.25rem;
+  }
+ 

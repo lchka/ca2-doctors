@@ -1,40 +1,149 @@
-import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../utils/useAuth';
-import { Navbar as BootstrapNavbar, Nav, Button, Container } from 'react-bootstrap';
+import React, { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Navbar as BootstrapNavbar, Nav, Button, Container, Form } from "react-bootstrap";
+import { FaHome, FaUserMd, FaUser, FaSearch, FaCalendarAlt } from "react-icons/fa";
+import { useAuth } from "../utils/useAuth";
+import "../styles/NavBar.scss";
+
+import logoImage from "../images/navlogono.png";
 
 const CustomNavbar = () => {
-    const { logout, token } = useAuth();
-    const navigate = useNavigate();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { logout, token } = useAuth();
 
-    return (
-        <BootstrapNavbar bg="light" expand="lg" className="mb-3">
-            <Container>
-                <BootstrapNavbar.Brand as={Link} to="/" className="fs-3">DL Medical</BootstrapNavbar.Brand>
-                <BootstrapNavbar.Toggle aria-controls="basic-navbar-nav" />
-                <BootstrapNavbar.Collapse id="basic-navbar-nav">
-                    <Nav className="me-auto">
-                        <Nav.Link as={Link} to="/" className="fs-5">Home</Nav.Link>
-                        <Nav.Link as={Link} to="/doctors" className="fs-5">Our Doctors</Nav.Link>
-                        <Nav.Link as={Link} to="/patients" className="fs-5">Our Patients</Nav.Link>
-                        {/* <Nav.Link as={Link} to="/prescriptions" className="fs-5">Prescriptions</Nav.Link> */}
-                        {/* <Nav.Link as={Link} to="/diagnoses" className="fs-5">Diagnoses</Nav.Link> */}
-                        <Nav.Link as={Link} to="/appointments" className="fs-5">Appointments</Nav.Link> {/* Adding the link for Appointments */}
-                        {!token && (
-                            <Nav.Link as={Link} to="/register" className="fs-5">Register</Nav.Link>
-                        )}
-                    </Nav>
-                    <Nav>
-                        {token ? (
-                            <Button variant="outline-danger" className="fs-5" onClick={() => { logout(); navigate('/login'); }}>Logout</Button>
-                        ) : (
-                            <Nav.Link as={Link} to="/login" className="fs-5">Login</Nav.Link>
-                        )}
-                    </Nav>
-                </BootstrapNavbar.Collapse>
-            </Container>
-        </BootstrapNavbar>
-    );
-}
+  const [activeLink, setActiveLink] = useState(location.pathname);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+
+    if (searchQuery.trim() !== "") {
+      // Redirect to a search results page or make an API call here
+      console.log("Searching for:", searchQuery);
+      navigate(`/search?query=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
+  return (
+    <BootstrapNavbar expand="lg" className="navbar-dark gradient-custom sticky-top">
+      <Container fluid>
+        {/* Navbar Brand */}
+        <BootstrapNavbar.Brand as={Link} to="/">
+          <img src={logoImage} alt="DL Medical Logo" className="d-inline-block align-top" height="60" />
+        </BootstrapNavbar.Brand>
+
+        {/* Navbar Toggler */}
+        <BootstrapNavbar.Toggle aria-controls="navbarSupportedContent" />
+
+        <BootstrapNavbar.Collapse id="navbarSupportedContent">
+          {/* Left Links */}
+          <Nav className="d-flex flex-row mt-3 mt-lg-0">
+            <Nav.Item className="text-center mx-2 mx-lg-1">
+              <Nav.Link
+                as={Link}
+                to="/"
+                className={`nav-link ${activeLink === "/" ? "active-link" : ""}`}
+                onClick={() => setActiveLink("/")}
+              >
+                <div>
+                  <FaHome size={20} className="icon" />
+                </div>
+                Home
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item className="text-center mx-2 mx-lg-1">
+              <Nav.Link
+                as={Link}
+                to="/doctors"
+                className={`nav-link ${activeLink === "/doctors" ? "active-link" : ""}`}
+                onClick={() => setActiveLink("/doctors")}
+              >
+                <div>
+                  <FaUserMd size={20} className="icon" />
+                </div>
+                Our Doctors
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item className="text-center mx-2 mx-lg-1">
+              <Nav.Link
+                as={Link}
+                to="/patients"
+                className={`nav-link ${activeLink === "/patients" ? "active-link" : ""}`}
+                onClick={() => setActiveLink("/patients")}
+              >
+                <div>
+                  <FaUser size={20} className="icon" />
+                </div>
+                Our Patients
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item className="text-center mx-2 mx-lg-1">
+              <Nav.Link
+                as={Link}
+                to="/appointments"
+                className={`nav-link ${activeLink === "/appointments" ? "active-link" : ""}`}
+                onClick={() => setActiveLink("/appointments")}
+              >
+                <div>
+                  <FaCalendarAlt size={20} className="icon" />
+                </div>
+                Appointments
+              </Nav.Link>
+            </Nav.Item>
+          </Nav>
+
+          {/* Right Links */}
+          <Nav className="ms-auto d-flex flex-row mt-3 mt-lg-0">
+            {/* Search Form */}
+            <Nav.Item>
+              <Form className="d-flex input-group w-auto ms-lg-3 my-3 my-lg-0" onSubmit={handleSearch}>
+                <Form.Control
+                  type="search"
+                  placeholder="Search by name, specialization, etc."
+                  aria-label="Search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <Button variant="outline-white" type="submit">
+                  <FaSearch size={18} />
+                </Button>
+              </Form>
+            </Nav.Item>
+
+            {/* Logout or Login/Register Links */}
+            {token ? (
+              <Nav.Item className="text-center mx-2 mx-lg-1">
+                <Button
+                  variant="outline-danger"
+                  className="fs-6"
+                  onClick={() => {
+                    logout();
+                    navigate("/login");
+                  }}
+                >
+                  Logout
+                </Button>
+              </Nav.Item>
+            ) : (
+              <>
+                <Nav.Item className="text-center mx-2 mx-lg-1">
+                  <Nav.Link as={Link} to="/login" className="fs-6">
+                    Login
+                  </Nav.Link>
+                </Nav.Item>
+                <Nav.Item className="text-center mx-2 mx-lg-1">
+                  <Nav.Link as={Link} to="/register" className="fs-6">
+                    Register
+                  </Nav.Link>
+                </Nav.Item>
+              </>
+            )}
+          </Nav>
+        </BootstrapNavbar.Collapse>
+      </Container>
+    </BootstrapNavbar>
+  );
+};
 
 export default CustomNavbar;

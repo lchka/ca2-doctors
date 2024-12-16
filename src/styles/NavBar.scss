@@ -1,0 +1,58 @@
+body {
+    font-family: 'Lato', sans-serif;
+  }
+
+.btn {
+    padding: .45rem 1.5rem .35rem;
+  }
+  .navbar {
+    position: sticky;  /* Makes the navbar sticky */
+    background-color: #007bff;
+    background: linear-gradient(to bottom, #007bff 0%, rgba(0, 0, 0, 0) 60%);
+    
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  }
+  
+  
+  
+  .gradient-custom {
+    // Fallback for old browsers
+    background: #71a4f5;
+  
+    // Chrome 10-25, Safari 5.1-6
+    background: -webkit-linear-gradient(to right, rgb(113, 148, 245), rgb(113, 202, 250));
+  
+    // W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+
+    background: linear-gradient(to right, rgb(190, 222, 251), rgb(56, 146, 255));
+  }
+  .nav-link {
+    color: white;
+    font-size: 0.9rem; /* Base font size */
+    font-weight: 400; /* Regular weight */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
+                color 0.3s ease, 
+                font-size 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  
+    .icon {
+      transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smooth scaling for the icon */
+    }
+  
+    &:hover,
+    &.active-link {
+      color: #f8f9fa; /* Optional: Highlight text color */
+      font-size: 1rem; /* Slightly increase font size */
+      font-weight: 700; /* Semi-bold font for better readability */
+      transform: scale(1.03); /* Subtle scale for the whole link */
+  
+      .icon {
+        transform: scale(1.2); /* Slightly smaller scale for smoother hover effect */
+      }
+    }
+  }
+  
+  
+  
