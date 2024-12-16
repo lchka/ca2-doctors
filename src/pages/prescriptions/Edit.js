@@ -34,7 +34,9 @@ const Edit = () => {
             }
         };
 
-        fetchPrescription();
+        if (id) {
+            fetchPrescription();
+        }
     }, [id, token]);
 
     const handleChange = (e) => {
@@ -47,7 +49,7 @@ const Edit = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`https://fed-medical-clinic-api.vercel.app/prescriptions/${id}`, form, {
+            const response = await axios.patch(`https://fed-medical-clinic-api.vercel.app/prescriptions/${id}`, form, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -55,7 +57,7 @@ const Edit = () => {
             navigate(`/prescriptions/${id}`); // Navigate to the prescription details page after successful update
         } catch (error) {
             console.error('Error updating prescription:', error);
-            setError('Error updating prescription');
+            setError(error.response ? error.response.data.message : 'Error updating prescription');
         }
     };
 

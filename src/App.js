@@ -30,6 +30,7 @@ import Appointments from './pages/appointments/Appointments'; // Importing the A
 import SingleAppointment from './pages/appointments/SingleAppointment'; // Importing the SingleAppointment component
 import EditAppointment from './pages/appointments/Edit'; // Importing the EditAppointment component
 import CreateAppointment from './pages/appointments/Create'; // Importing the CreateAppointment component
+import AllDiagnoses from "./pages/diagnoses/AllDiagnoses"; // Import the new page
 
 export const UserContext = createContext();
 
@@ -58,6 +59,7 @@ const App = () => {
                             <Route path="/prescriptions/:id" element={<SinglePrescription />} /> {/* Adding the route for viewing a single prescription */}
                             <Route path="/prescriptions/:id/edit" element={<EditPrescription />} /> {/* Adding the route for editing a prescription */}
                             {/* Diagnosis routes */}
+                            <Route path="/patients/:id/diagnoses" element={<AllDiagnoses />} />
                             <Route path="/diagnoses" element={<Diagnoses />} /> {/* Adding the route for viewing diagnoses */}
                             <Route path="/diagnoses/create" element={<CreateDiagnose />} /> {/* Adding the route for creating a diagnosis */}
                             <Route path="/diagnoses/:id" element={<SingleDiagnose />} /> {/* Adding the route for viewing a single diagnosis */}
