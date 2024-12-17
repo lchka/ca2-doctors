@@ -16,6 +16,7 @@ body {
   
   
   .gradient-custom {
+    opacity: 75%;
     // Fallback for old browsers
     background: #71a4f5;
   
@@ -23,7 +24,7 @@ body {
     background: -webkit-linear-gradient(to right, rgb(113, 148, 245), rgb(113, 202, 250));
   
     // W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+
-    background: linear-gradient(to right, rgb(190, 222, 251), rgb(56, 146, 255));
+    background: linear-gradient(to right, rgb(190, 222, 251), rgb(110, 175, 255));
   }
   .nav-link {
     color: white;
@@ -53,6 +54,65 @@ body {
       }
     }
   }
-  
-  
+  /* Animation for logo sliding in from the left */
+.logo-slide-in {
+  animation: slideInLogo 0.8s ease-out forwards;
+}
+
+/* Animation for the links fading in */
+
+
+/* Keyframe for the logo sliding in */
+@keyframes slideInLogo {
+  0% {
+    transform: translateX(-20%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.search-box {
+  padding: 5px 20px; // Add more padding to the search box
+  border-radius: 5px; // Optional: Add border-radius for rounded corners
+}
+.icon {
+  transform: scale(1.2); /* Slightly smaller scale for smoother hover effect */
+}
+
+/* Animation for logo sliding in from the left */
+.logo-slide-in {
+  animation: slideInLogo 0.8s ease-out forwards;
+}
+
+/* Animation for the links fading in */
+
+/* Keyframe for the logo sliding in */
+@keyframes slideInLogo {
+  0% {
+    transform: translateX(-20%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.search-box {
+  padding: 10px 20px; // Add more padding to the search box
+  border-radius: 5px; // Optional: Add border-radius for rounded corners
+}
+
+.search-button {
+  background-color: rgb(80, 144, 255); // Set the background color to blue
+  border: none; // Remove the border
+  color: white; // Set the text color to white
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px; // Add padding for better spacing
+  border-radius: 5px; // Optional: Add border-radius for rounded corners
+  &:hover {
+    background-color: rgb(60, 124, 235); // Darker blue on hover
+  }
+}
   

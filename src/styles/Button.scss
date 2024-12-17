@@ -8,19 +8,35 @@
       transition: transform 0.4s ease;
     }
   }
+  .arrowRounded {
+    border: 2px solid transparent; /* Transparent border as a base */
+    border-radius: 50px; /* Rounded corners */
+    background-image: linear-gradient(white, white), 
+                      linear-gradient(to right, #b0e0ff, #499bff); /* White inside and gradient border */
+    background-origin: border-box;
+    background-clip: padding-box, border-box; /* Clip the background colors */
+    color: #ffffff; /* White icon color */
+    transition: transform 0.4s ease; /* Smooth transition */
+  }
   
   .orderNow {
     @include arrowTextHover;
   
     /* Blue background for the button */
-    background-color: #81beff; /* Blue background */
-    color: white; /* White text color */
-    border: none; /* Remove border */
+    background-color: #ffffff; /* Blue background */
+    color: rgb(127, 188, 250); /* White text color */
+    border: 2px solid transparent; /* Transparent border as a base */
+    border-radius: 50px; /* Rounded corners */
+    background-image: linear-gradient(white, white), 
+                      linear-gradient(to right, #b0e0ff, #499bff); /* White inside and gradient border */
+    background-origin: border-box;
+    background-clip: padding-box, border-box; /* Clip the background colors */
+  
     
     &:hover {
       /* Arrow and text transform */
       .arrowRounded {
-        transform: translateX(540%);
+        transform: translateX(560%);
       }
   
       .contentText {
@@ -28,8 +44,7 @@
       }
   
       /* Keep the background color blue and text white on hover */
-      background-color: #3295ff; /* Keep it blue */
-      color: white; /* Keep text white */
+      color: rgb(127, 188, 250); /* White text color */
     }
   
     /* Optional: Round the corners for a smooth appearance */
