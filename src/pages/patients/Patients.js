@@ -4,8 +4,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Card, Button, Container, Row, Col, Alert, Form, Pagination } from 'react-bootstrap';
 import { useAuth } from '../../utils/useAuth';
 import patientImage from '../../images/patient.png'; // Importing the image
+import '../../styles/Patients.scss';
 
-const Patient = () => {
+const Patients = () => {
     const [patients, setPatients] = useState([]);
     const [filteredPatients, setFilteredPatients] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
@@ -14,9 +15,10 @@ const Patient = () => {
 
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
-    const patientsPerPage = 10; // Maximum number of patients per page
+    const patientsPerPage = 8; // Maximum number of patients per page
 
-    const msg = useLocation()?.state?.msg || null;
+    const { state } = useLocation();
+    const successMessage = state?.success || null;
 
     const getPatients = async () => {
         try {
@@ -56,7 +58,7 @@ const Patient = () => {
 
     useEffect(() => {
         getPatients();
-    }, []);
+    }, [token]);
 
     // Paginate the filteredPatients
     const indexOfLastPatient = currentPage * patientsPerPage;
@@ -72,8 +74,9 @@ const Patient = () => {
     }
 
     return (
-        <Container className="mt-4">
-            {msg && <Alert variant="info">{msg}</Alert>}
+        <Container className="my-4">
+            {successMessage && <Alert variant="info">{successMessage}</Alert>}
+            <h1 className="text-center mb-4">Patients</h1>
             <Row className="mb-3">
                 <Col className="text-end">
                     <Button variant="success" onClick={() => navigate('/patients/create')}>Add Patient</Button>
@@ -81,28 +84,27 @@ const Patient = () => {
             </Row>
 
             {/* Search Filter */}
-            <Row className="mb-3">
-                <Col md={4}>
-                    <Form.Control 
-                        type="text" 
-                        placeholder="Search by Name or Phone" 
-                        value={searchQuery} 
-                        onChange={handleSearchChange}
-                    />
-                </Col>
-            </Row>
+            <Form.Group controlId="search" className="my-4">
+                <Form.Control
+                    type="text"
+                    placeholder="Search by Name or Phone"
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    className="rounded-3 "
+                />
+            </Form.Group>
 
             {/* Patient List */}
             <Row>
                 {currentPatients.length > 0 ? (
-                    currentPatients.map((patient) => (
+                    currentPatients.map((patient, index) => (
                         <Col key={patient.id} sm={12} md={6} lg={3}>
-                            <Card className="mb-3 rounded">
-                                <Card.Img variant="top" src={patientImage} alt="Patient" />
+                            <Card className={`mb-3 patient-card rounded-5 ${index % 4 < 2 ? 'animate-left' : 'animate-right'}`}>
+                                <Card.Img variant="top" src={patientImage} alt="Patient" className="rounded-top my-2" />
                                 <Card.Body>
                                     <Card.Title className="fs-4 fw-bold">{patient.first_name} {patient.last_name}</Card.Title>
                                     <Card.Text className="fs-5">Phone: {patient.phone}</Card.Text>
-                                    <Button variant="primary" onClick={() => navigate(`/patient/${patient.id}`)}>View Details</Button>
+                                    <Button variant="primary" className="btn-view-details rounded-3 text-uppercase fw-semibold" onClick={() => navigate(`/patient/${patient.id}`)}>View Details</Button>
                                 </Card.Body>
                             </Card>
                         </Col>
@@ -115,8 +117,8 @@ const Patient = () => {
             </Row>
 
             {/* Pagination */}
-            <Row className="mt-4">
-                <Col className="text-center">
+            <Row className="my-5">
+                <Col className="d-flex justify-content-center">
                     <Pagination>
                         <Pagination.Prev 
                             onClick={() => handlePageChange(currentPage - 1)} 
@@ -142,4 +144,4 @@ const Patient = () => {
     );
 };
 
-export default Patient;
+export default Patients;

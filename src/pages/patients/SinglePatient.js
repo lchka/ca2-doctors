@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   Container,
   Row,
@@ -11,7 +11,8 @@ import {
   Collapse,
 } from "react-bootstrap";
 import { useAuth } from "../../utils/useAuth";
-import "../../styles/Animation.scss"; // Import the SCSS file for smooth animations
+import "../../styles/Patients.scss"; // Import the SCSS file for smooth animations
+import patientImage from "../../images/patient.png"; // Importing the image
 
 const SinglePatient = () => {
   const { token } = useAuth();
@@ -22,6 +23,7 @@ const SinglePatient = () => {
   const [error, setError] = useState(null);
   const { id } = useParams();
   const navigate = useNavigate();
+  const { state } = useLocation();
 
   const [expandedPrescriptions, setExpandedPrescriptions] = useState({});
 
@@ -93,29 +95,6 @@ const SinglePatient = () => {
 
     fetchPatientData();
   }, [id, token]);
-  const formatDate = (timestamp) => {
-    if (typeof timestamp !== "number") {
-      console.error("Invalid timestamp:", timestamp);
-      return "Invalid Date";
-    }
-  
-    console.log("Received timestamp:", timestamp); // Log the timestamp
-  
-    const date = new Date(timestamp * 1000); // Convert from seconds to milliseconds
-  
-    if (isNaN(date.getTime())) {
-      console.error("Invalid Date object:", date);
-      return "Invalid Date";
-    }
-  
-    const year = date.getFullYear().toString().slice(2); // Get the last two digits of the year
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Get month and pad to 2 digits
-    const day = String(date.getDate()).padStart(2, '0'); // Get day and pad to 2 digits
-    
-    return `${month}-${day}-${year}`; // Format as MM-DD-YY
-  };
-  
-  
 
   const handlePrescriptionToggle = (prescriptionId) => {
     setExpandedPrescriptions((prevState) => ({
@@ -134,7 +113,9 @@ const SinglePatient = () => {
           },
         }
       );
-      setDiagnoses(diagnoses.filter((diagnosis) => diagnosis.id !== diagnosisId));
+      setDiagnoses(
+        diagnoses.filter((diagnosis) => diagnosis.id !== diagnosisId)
+      );
     } catch (error) {
       console.error("Error deleting diagnosis:", error);
       setError("Error deleting diagnosis");
@@ -152,11 +133,34 @@ const SinglePatient = () => {
         }
       );
       setPrescriptions(
-        prescriptions.filter((prescription) => prescription.id !== prescriptionId)
+        prescriptions.filter(
+          (prescription) => prescription.id !== prescriptionId
+        )
       );
     } catch (error) {
       console.error("Error deleting prescription:", error);
       setError("Error deleting prescription");
+    }
+  };
+
+  const handleDeletePatient = async () => {
+    try {
+      await axios.delete(
+        `https://fed-medical-clinic-api.vercel.app/patients/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      navigate('/patients', { state: { success: 'Patient successfully deleted!' } }); // Redirect to patients list after deletion with success message
+    } catch (error) {
+      console.error("Error deleting patient:", error);
+      if (error.response && error.response.status === 409) {
+        setError("Cannot delete patient. There are related records that must be deleted first.");
+      } else {
+        setError("Error deleting patient");
+      }
     }
   };
 
@@ -166,11 +170,16 @@ const SinglePatient = () => {
 
   return (
     <Container className="mt-4">
+      {state && state.success && (
+        <Alert variant="info">
+          {state.success}
+        </Alert>
+      )}
       {error && <Alert variant="danger">{error}</Alert>}
       <Row>
         {/* Left Section (Patient Info + Image) */}
         <Col md={6}>
-          <div className="d-flex flex-column border p-3 rounded">
+          <div className="patient-info d-flex flex-column border p-3 rounded-5 shadow-sm animate-left hover-animate">
             <div className="d-flex justify-content-between">
               <h1 className="fs-1 mb-5">
                 {patient.first_name} {patient.last_name}
@@ -180,153 +189,160 @@ const SinglePatient = () => {
             <div className="d-flex">
               {/* Patient Details */}
               <div className="w-75">
-                <p className="fs-5"><strong>Email:</strong> {patient.email}</p>
-                <p className="fs-5">Phone: {patient.phone}</p>
-                <p className="fs-5">Date of Birth: {formatDate(patient.date_of_birth)}</p>
-                <p className="fs-5">Address: {patient.address}</p>
+                <p className="fs-5">
+                  <strong>Email:</strong> {patient.email}
+                </p>
+                <p className="fs-5">
+                  <strong>Phone:</strong> {patient.phone}
+                </p>
+                <p className="fs-5">
+                  <strong>Date of Birth: </strong>
+                  {patient.date_of_birth}
+                </p>
+                <p className="fs-5"><strong>Address:</strong> {patient.address}</p>
               </div>
               {/* Patient Image */}
               <div className="w-25">
-                <Image src="https://via.placeholder.com/150" fluid />
+                <Image src={patientImage} fluid />
               </div>
             </div>
             {/* Edit Patient Button */}
             <Button
+            className="btn-view-details my-2 rounded-3 text-uppercase fw-semibold"
               variant="primary"
               onClick={() => navigate(`/patients/${id}/edit`)}
             >
               Edit Patient
             </Button>
+            <Button className="btn-delete my-2 text-uppercase fw-semibold rounded-3" onClick={handleDeletePatient}>Delete Patient</Button>
+
           </div>
         </Col>
 
         {/* Right Section (Conditions) */}
         <Col md={6}>
-          <div
-            className="border p-3 rounded"
-            style={{ borderColor: "lightblue" }}
-          >
-            <h5>Conditions</h5>
-            <div className="mt-3">
-              <Button
-                variant="secondary"
-                onClick={() => navigate(`/diagnoses/create?patient_id=${id}`)}
-              >
-                Add Diagnosis
-              </Button>
-            </div>
-            {diagnoses && diagnoses.length > 0 ? (
-              diagnoses.slice(0, 2).map((d) => {
-                const diagnosisPrescriptions = prescriptions.filter(
-                  (prescription) => prescription.diagnosis_id === d.id
-                );
-                return (
-                  <div
-                    key={d.id}
-                    className="mb-3"
-                    style={{ borderColor: "lightgreen" }}
-                  >
-                    <div className="border p-3 rounded">
-                      <h6>Condition: {d.condition}</h6>
-                      <p>Diagnosis Date: {formatDate(d.diagnosis_date)}</p>
-                      <div>
-                        {/* Buttons for Add/Edit Prescription */}
-                        <Button
-                          variant="secondary"
-                          onClick={() =>
-                            navigate(`/prescriptions/create?patient_id=${id}&diagnosis_id=${d.id}`)
-                          }
-                        >
-                          Add Prescription
-                        </Button>
-                        <Button
-                          variant="warning"
-                          onClick={() =>
-                            navigate(`/diagnoses/${d.id}/edit?patient_id=${id}`)
-                          }
-                        >
-                          Edit Diagnosis
-                        </Button>
-                        {/* Delete Diagnosis Button */}
-                        <Button
-                          variant="danger"
-                          onClick={() => handleDeleteDiagnosis(d.id)}
-                          className="ms-2"
-                        >
-                          Delete Diagnosis
-                        </Button>
-                      </div>
-
-                      {/* Prescriptions and Edit Prescription Button */}
-                      {diagnosisPrescriptions.length > 0 ? (
-                        <div>
-                          <h6>Prescriptions</h6>
-                          {diagnosisPrescriptions.map((prescription) => (
-                            <div key={prescription.id}>
-                              <p>
-                                <strong>Medication:</strong> {prescription.medication}
-                              </p>
-                              <Button
-                                variant="link"
-                                onClick={() =>
-                                  handlePrescriptionToggle(prescription.id)
-                                }
-                              >
-                                {expandedPrescriptions[prescription.id]
-                                  ? "View Less"
-                                  : "View more"}
-                              </Button>
-                              <Collapse
-                                in={expandedPrescriptions[prescription.id]}
-                              >
-                                <div>
-                                  <p>
-                                    <strong>Dosage:</strong> {prescription.dosage}
-                                  </p>
-                                  <p>
-                                    <strong>Doctor:</strong>{" "}
-                                    {doctors[prescription.doctor_id] || "Unknown"}
-                                  </p>
-                                  <p>
-                                    <strong>Prescription Period:</strong>{" "}
-                                    {formatDate(prescription.start_date)} to{" "}
-                                    {formatDate(prescription.end_date)}
-                                  </p>
-                                  <div>
-                                    {/* Edit Prescription Button */}
-                                    <Button
-                                      variant="warning"
-                                      onClick={() =>
-                                        navigate(`/prescriptions/${prescription.id}/edit`)
-                                      }
-                                    >
-                                      Edit Prescription
-                                    </Button>
-                                    {/* Delete Prescription Button */}
-                                    <Button
-                                      variant="danger"
-                                      onClick={() =>
-                                        handleDeletePrescription(prescription.id)
-                                      }
-                                      className="ms-2"
-                                    >
-                                      Delete Prescription
-                                    </Button>
-                                  </div>
-                                </div>
-                              </Collapse>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p>No prescriptions for this diagnosis.</p>
-                      )}
-                    </div>
+          <div className="conditions-section p-3 rounded-3 animate-right">
+            <h3 className="mb-3">Conditions</h3>
+            {diagnoses.length > 0 ? (
+              diagnoses.map((diagnosis) => (
+                <div key={diagnosis.id} className="mb-3">
+                  <h5>{diagnosis.condition}</h5>
+                  <p>
+                    <strong>Date:</strong> {diagnosis.date}
+                  </p>
+                  <p>
+                    <strong>Notes:</strong> {diagnosis.notes}
+                  </p>
+                  <div>
+                    {/* Buttons for Add/Edit Prescription */}
+                    <Button
+                      variant="secondary"
+                      onClick={() =>
+                        navigate(
+                          `/prescriptions/create?patient_id=${id}&diagnosis_id=${diagnosis.id}`
+                        )
+                      }
+                    >
+                      Add Prescription
+                    </Button>
+                    <Button
+                      variant="warning"
+                      onClick={() =>
+                        navigate(
+                          `/diagnoses/${diagnosis.id}/edit?patient_id=${id}`
+                        )
+                      }
+                    >
+                      Edit Diagnosis
+                    </Button>
+                    {/* Delete Diagnosis Button */}
+                    <Button
+                      variant="danger"
+                      onClick={() => handleDeleteDiagnosis(diagnosis.id)}
+                      className="ms-2"
+                    >
+                      Delete Diagnosis
+                    </Button>
                   </div>
-                );
-              })
+
+                  {/* Prescriptions and Edit Prescription Button */}
+                  {prescriptions.filter(
+                    (prescription) => prescription.diagnosis_id === diagnosis.id
+                  ).length > 0 ? (
+                    <div>
+                      <h6>Prescriptions</h6>
+                      {prescriptions
+                        .filter(
+                          (prescription) =>
+                            prescription.diagnosis_id === diagnosis.id
+                        )
+                        .map((prescription) => (
+                          <div key={prescription.id}>
+                            <p>
+                              <strong>Medication:</strong>{" "}
+                              {prescription.medication}
+                            </p>
+                            <Button
+                              variant="link"
+                              onClick={() =>
+                                handlePrescriptionToggle(prescription.id)
+                              }
+                            >
+                              {expandedPrescriptions[prescription.id]
+                                ? "View Less"
+                                : "View more"}
+                            </Button>
+                            <Collapse
+                              in={expandedPrescriptions[prescription.id]}
+                            >
+                              <div>
+                                <p>
+                                  <strong>Dosage:</strong> {prescription.dosage}
+                                </p>
+                                <p>
+                                  <strong>Doctor:</strong>{" "}
+                                  {doctors[prescription.doctor_id] || "Unknown"}
+                                </p>
+                                <p>
+                                  <strong>Prescription Period:</strong>{" "}
+                                  {prescription.start_date} to{" "}
+                                  {prescription.end_date}
+                                </p>
+                                <div>
+                                  {/* Edit Prescription Button */}
+                                  <Button
+                                    variant="warning"
+                                    onClick={() =>
+                                      navigate(
+                                        `/prescriptions/${prescription.id}/edit`
+                                      )
+                                    }
+                                  >
+                                    Edit Prescription
+                                  </Button>
+                                  {/* Delete Prescription Button */}
+                                  <Button
+                                    variant="danger"
+                                    onClick={() =>
+                                      handleDeletePrescription(prescription.id)
+                                    }
+                                    className="ms-2"
+                                  >
+                                    Delete Prescription
+                                  </Button>
+                                </div>
+                              </div>
+                            </Collapse>
+                          </div>
+                        ))}
+                    </div>
+                  ) : (
+                    <p>No prescriptions for this diagnosis.</p>
+                  )}
+                </div>
+              ))
             ) : (
-              <p>No diagnoses available.</p>
+              <p>No conditions found.</p>
             )}
 
             {/* View More Diagnoses Button */}

@@ -1,27 +1,26 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate, useParams } from "react-router-dom";
-import { Form, Button, Container, Alert } from "react-bootstrap";
+import { useParams, useNavigate } from "react-router-dom";
+import { Container, Form, Button, Alert } from "react-bootstrap";
 import { useAuth } from "../../utils/useAuth";
+import "../../styles/CreateForm.scss"; // Reuse the SCSS file for consistent form styling
 
-const Edit = () => {
+const EditPatient = () => {
+  const { token } = useAuth();
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     first_name: "",
     last_name: "",
     email: "",
     phone: "",
     date_of_birth: "",
-    address: "",
   });
-  const [error, setError] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
-  const navigate = useNavigate();
-  const { id } = useParams();
-  const { token } = useAuth();
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Fetch the patient's details to populate the form
-    const fetchPatient = async () => {
+    const fetchPatientData = async () => {
       try {
         const response = await axios.get(
           `https://fed-medical-clinic-api.vercel.app/patients/${id}`,
@@ -31,33 +30,57 @@ const Edit = () => {
             },
           }
         );
-
         setForm(response.data);
       } catch (error) {
-        console.error("Error fetching patient:", error);
+        console.error("Error fetching patient data:", error);
         setError("Error fetching patient data");
       }
     };
 
-    if (id && token) {
-      fetchPatient();
-    }
+    fetchPatientData();
   }, [id, token]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm({
-      ...form,
+    setForm((prevForm) => ({
+      ...prevForm,
       [name]: value,
-    });
+    }));
+  };
+
+  const validateForm = () => {
+    const errors = {};
+    if (!form.first_name) errors.first_name = "First name is required";
+    if (!form.last_name) errors.last_name = "Last name is required";
+    if (!form.email) {
+      errors.email = "Email is required";
+    } else if (!/@/.test(form.email)) {
+      errors.email = "Email must contain an '@' sign";
+    }
+    if (!form.phone) {
+      errors.phone = "Phone number is required";
+    } else if (!/^\d{10}$/.test(form.phone)) {
+      errors.phone = "Phone number must be 10 digits";
+    }
+    if (!form.date_of_birth) {
+      errors.date_of_birth = "Date of birth is required";
+    } else if (!/^\d{6}$/.test(form.date_of_birth)) {
+      errors.date_of_birth = "Date of birth must be in ddmmyy format";
+    }
+    return errors;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted with values:", form); // Debugging: Log form data on submit
-
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      console.error("Validation errors:", errors);
+      return;
+    }
+  
     try {
-      const response = await axios.patch(
+      await axios.patch(
         `https://fed-medical-clinic-api.vercel.app/patients/${id}`,
         form,
         {
@@ -66,31 +89,24 @@ const Edit = () => {
           },
         }
       );
-
-      // Debugging: Log the response after the update
-      console.log("Update response:", response);
-
-      // Navigate to the single patient's details page after successful update
-      navigate(`/patient/${id}`); // Navigate to the single patient's page
-    } catch (err) {
-      console.error("Error updating patient:", err);
-      setError("Error updating patient");
+      navigate(`/patient/${id}`, { state: { success: 'Patient successfully updated!' } });
+    } catch (error) {
+      console.error("Error updating patient data:", error);
+      if (error.response && error.response.data && error.response.data.error) {
+        setError(error.response.data.error.issues.map(issue => issue.message).join(', '));
+      } else if (error.response && error.response.data && error.response.data.message) {
+        setError(error.response.data.message);
+      } else {
+        setError("Error updating patient data");
+      }
     }
   };
-
   return (
-    <Container className="mt-4">
+    <Container className="create-form-container my-5">
       <h1>Edit Patient</h1>
       {error && <Alert variant="danger">{error}</Alert>}
-      {Object.keys(validationErrors).length > 0 && (
-        <Alert variant="danger">
-          {Object.values(validationErrors).map((errorMsg, index) => (
-            <div key={index}>{errorMsg}</div>
-          ))}
-        </Alert>
-      )}
-      <Form onSubmit={handleSubmit}>
-        <Form.Group controlId="formFirstName">
+      <Form onSubmit={handleSubmit} className="create-form p-4 rounded shadow">
+        <Form.Group controlId="formFirstName" className="mb-3">
           <Form.Label>First Name</Form.Label>
           <Form.Control
             type="text"
@@ -99,13 +115,14 @@ const Edit = () => {
             value={form.first_name}
             onChange={handleChange}
             isInvalid={validationErrors.first_name}
+            required
           />
           <Form.Control.Feedback type="invalid">
             {validationErrors.first_name}
           </Form.Control.Feedback>
         </Form.Group>
 
-        <Form.Group controlId="formLastName">
+        <Form.Group controlId="formLastName" className="mb-3">
           <Form.Label>Last Name</Form.Label>
           <Form.Control
             type="text"
@@ -114,13 +131,14 @@ const Edit = () => {
             value={form.last_name}
             onChange={handleChange}
             isInvalid={validationErrors.last_name}
+            required
           />
           <Form.Control.Feedback type="invalid">
             {validationErrors.last_name}
           </Form.Control.Feedback>
         </Form.Group>
 
-        <Form.Group controlId="formEmail">
+        <Form.Group controlId="formEmail" className="mb-3">
           <Form.Label>Email</Form.Label>
           <Form.Control
             type="email"
@@ -129,13 +147,14 @@ const Edit = () => {
             value={form.email}
             onChange={handleChange}
             isInvalid={validationErrors.email}
+            required
           />
           <Form.Control.Feedback type="invalid">
             {validationErrors.email}
           </Form.Control.Feedback>
         </Form.Group>
 
-        <Form.Group controlId="formPhone">
+        <Form.Group controlId="formPhone" className="mb-3">
           <Form.Label>Phone</Form.Label>
           <Form.Control
             type="text"
@@ -144,13 +163,15 @@ const Edit = () => {
             value={form.phone}
             onChange={handleChange}
             isInvalid={validationErrors.phone}
+            maxLength={10}
+            required
           />
           <Form.Control.Feedback type="invalid">
             {validationErrors.phone}
           </Form.Control.Feedback>
         </Form.Group>
 
-        <Form.Group controlId="formDateOfBirth">
+        <Form.Group controlId="formDateOfBirth" className="mb-3">
           <Form.Label>Date of Birth</Form.Label>
           <Form.Control
             type="text"
@@ -159,38 +180,19 @@ const Edit = () => {
             value={form.date_of_birth}
             onChange={handleChange}
             isInvalid={validationErrors.date_of_birth}
+            required
           />
           <Form.Control.Feedback type="invalid">
-            {validationErrors.date_of_birth ||
-              "Date of Birth must be in ddmmyy format (6 digits)"}
-          </Form.Control.Feedback>
-          <Form.Text className="text-muted">
-            Please double-check the date of birth and ensure it's entered in
-            ddmmyy format. If in doubt, please re-enter it.
-          </Form.Text>
-        </Form.Group>
-
-        <Form.Group controlId="formAddress">
-          <Form.Label>Address</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="Enter address"
-            name="address"
-            value={form.address}
-            onChange={handleChange}
-            isInvalid={validationErrors.address}
-          />
-          <Form.Control.Feedback type="invalid">
-            {validationErrors.address}
+            {validationErrors.date_of_birth}
           </Form.Control.Feedback>
         </Form.Group>
 
-        <Button variant="primary" type="submit" className="mt-3">
-          Update
+        <Button variant="primary" type="submit" className=" btn-primary text-uppercase fw-semibold w-100">
+          Update Patient
         </Button>
       </Form>
     </Container>
   );
 };
 
-export default Edit;
+export default EditPatient;
