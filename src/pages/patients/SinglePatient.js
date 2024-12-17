@@ -378,6 +378,7 @@ const SinglePatient = () => {
             {/* View More Diagnoses Button */}
             {diagnoses.length > 2 && (
               <Button
+              className="btn-view-details my-2 rounded-3 text-uppercase fw-semibold"
                 variant="primary"
                 onClick={() => navigate(`/patients/${id}/diagnoses`)}
               >

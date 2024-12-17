@@ -81,7 +81,7 @@ const Doctors = () => {
         <Container className="mt-4">
             {msg && <Alert variant="info" className="text-center">{msg}</Alert>}
             <h1 className="text-center mb-4">Doctors</h1>
-            <Button variant="primary" className="mb-4" onClick={() => navigate('/doctor/create')}>
+            <Button variant="primary" className="btn-view-details rounded-3 text-uppercase fw-semibold my-3" onClick={() => navigate('/doctor/create')}>
                 Create Doctor
             </Button>
             <Form.Group controlId="search" className="mb-4">

@@ -180,7 +180,7 @@ body {
 .videoAnimation video {
   transform: scale(0.8); /* Start smaller */
   opacity: 0; /* Start fully transparent */
-  transition: transform 0.6s ease-in-out, opacity 1s ease-in-out; /* Animate both scale and opacity */
+  transition: transform 0.4s ease-in-out, opacity 0.7s ease-in-out; /* Animate both scale and opacity */
 }
 
 .videoAnimation video.animate-video {
@@ -250,3 +250,5 @@ body {
 .animate-text, .animate-text-second {
   animation: slideInText 1s forwards;
 }
+
+

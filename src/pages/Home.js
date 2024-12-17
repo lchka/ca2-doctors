@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Container, Row, Col, Alert, Spinner, Card } from "react-bootstrap";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { AiOutlineRight, AiOutlineDown } from "react-icons/ai"; // Import downward arrow
 import "../styles/Home.scss";
 import { MdArrowDownward } from "react-icons/md"; // A different arrow component
 import "../styles/Button.scss";
 import { WiDaySunny, WiCloudy, WiRain } from "react-icons/wi"; // Weather icons from react-icons
 import Video from "../images/videoDna.mp4"; // Import the video file
-
+import Logo from "../images/navlogono.png"
 import doctorImage from "../images/doctor.jpg"; // Importing the image
 
 const Home = () => {
@@ -54,7 +54,7 @@ const Home = () => {
           setDoctorsInView(true); // Trigger doctors animation when it comes into view
         }
       },
-      { threshold: 0.5 } // Trigger when 50% of the doctors section is in view
+      { threshold: 0.8 } // Trigger when 50% of the doctors section is in view
     );
 
     if (doctorsElement) {
@@ -69,12 +69,12 @@ const Home = () => {
 
           try {
             const locationRes = await axios.get(
-              `http://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=8uh1KbPUUjS5ol77mdqnNb8gH1Hicy9H&q=${latitude},${longitude}`
+              `https://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=8uh1KbPUUjS5ol77mdqnNb8gH1Hicy9H&q=${latitude},${longitude}`
             );
             const locationKey = locationRes.data.Key;
 
             const weatherRes = await axios.get(
-              `http://dataservice.accuweather.com/currentconditions/v1/${locationKey}?apikey=8uh1KbPUUjS5ol77mdqnNb8gH1Hicy9H`
+              `https://dataservice.accuweather.com/currentconditions/v1/${locationKey}?apikey=8uh1KbPUUjS5ol77mdqnNb8gH1Hicy9H`
             );
             setWeather(weatherRes.data[0]);
             setLoading(false);
@@ -289,7 +289,14 @@ const Home = () => {
                     }}
                   />
                   <Card.Body>
-                    <Card.Title>{`${doctor.first_name} ${doctor.last_name}`}</Card.Title>
+                    <Card.Title>
+                      <Link
+                        className="text-decoration-none"
+                        to={`/doctor/${doctor.id}`}
+                      >
+                        {doctor.first_name} {doctor.last_name}
+                      </Link>
+                    </Card.Title>
                     <Card.Text>{doctor.specialisation}</Card.Text>
                   </Card.Body>
                 </Card>
@@ -298,6 +305,12 @@ const Home = () => {
           ))}
         </Row>
       </div>
+
+      <Row>
+  <Col className="d-flex justify-content-center mb-5 align-items-center">
+    <img src={Logo} alt="Logo" style={{ maxHeight: '100px' }} />
+  </Col>
+</Row>
     </Container>
   );
 };

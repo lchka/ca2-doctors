@@ -40,7 +40,7 @@ const SingleDoctor = () => {
             navigate('/doctors', { state: { success: 'Doctor successfully deleted!' } });
         } catch (error) {
             console.error('Error deleting doctor:', error);
-            setError('Error deleting doctor');
+            setError(error.response?.data?.message || 'Error deleting doctor');
         }
     };
 
