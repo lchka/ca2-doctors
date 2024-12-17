@@ -3,8 +3,9 @@ import axios from 'axios';
 import { useNavigate, useLocation } from "react-router-dom";
 import { Form, Button, Container, Alert } from 'react-bootstrap';
 import { useAuth } from '../../utils/useAuth';
+import "../../styles/CreateForm.scss"; // Import the SCSS file for consistent form styling
 
-const Create = () => {
+const CreateDiagnosis = () => {
     const { token } = useAuth();
     const [form, setForm] = useState({
         patient_id: '',
@@ -12,7 +13,6 @@ const Create = () => {
         diagnosis_date: '',
     });
     const [error, setError] = useState(null);
-    const [successMessage, setSuccessMessage] = useState('');
     const navigate = useNavigate();
     
     // Extract patient_id from the query string
@@ -96,7 +96,7 @@ const Create = () => {
         updatedForm.diagnosis_date = formattedDate;
 
         try {
-            const response = await axios.post('https://fed-medical-clinic-api.vercel.app/diagnoses', updatedForm, {
+            await axios.post('https://fed-medical-clinic-api.vercel.app/diagnoses', updatedForm, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
@@ -104,10 +104,9 @@ const Create = () => {
             });
 
             // Handle successful response
-            setSuccessMessage("Diagnosis added successfully!");
-            navigate(`/patient/${updatedForm.patient_id}`);
+            navigate(`/patient/${updatedForm.patient_id}`, { state: { success: 'Diagnosis added successfully.' } });
         } catch (err) {
-            // Handle error response and display detailed errora message
+            // Handle error response and display detailed error message
             console.error("Error Response:", err.response);
             if (err.response?.data?.error) {
                 setError(err.response.data.error.message || "Error adding diagnosis");
@@ -118,28 +117,24 @@ const Create = () => {
     };
 
     return (
-        <Container className="mt-4">
+        <Container className="create-form-container my-5">
             <h1>Add Diagnosis</h1>
-            
-            {/* Success Message */}
-            {successMessage && <Alert variant="success">{successMessage}</Alert>}
 
             {/* Error Message */}
             {error && <Alert variant="danger">{error}</Alert>}
 
-            <Form onSubmit={handleSubmit}>
-                <Form.Group controlId="formPatientId">
+            <Form onSubmit={handleSubmit} className="create-form p-4 rounded shadow">
+                <Form.Group controlId="formPatientId" className="mb-3">
                     <Form.Label>Patient ID</Form.Label>
                     <Form.Control
                         type="text"
                         name="patient_id"
                         value={form.patient_id}
                         readOnly
-                        style={{ filter: 'blur(0.5px)' }} // Slight blur effect
                     />
                 </Form.Group>
 
-                <Form.Group controlId="formCondition">
+                <Form.Group controlId="formCondition" className="mb-3">
                     <Form.Label>Condition</Form.Label>
                     <Form.Control
                         type="text"
@@ -147,10 +142,11 @@ const Create = () => {
                         name="condition"
                         value={form.condition}
                         onChange={handleChange}
+                        required
                     />
                 </Form.Group>
 
-                <Form.Group controlId="formDiagnosisDate">
+                <Form.Group controlId="formDiagnosisDate" className="mb-3">
                     <Form.Label>Diagnosis Date (DDMMYY)</Form.Label>
                     <Form.Control
                         type="text"
@@ -158,10 +154,11 @@ const Create = () => {
                         name="diagnosis_date"
                         value={form.diagnosis_date}
                         onChange={handleChange}
+                        required
                     />
                 </Form.Group>
 
-                <Button variant="primary" type="submit" className="mt-3">
+                <Button variant="primary" type="submit" className="w-100 mt-3">
                     Add Diagnosis
                 </Button>
             </Form>
@@ -169,4 +166,4 @@ const Create = () => {
     );
 };
 
-export default Create;
+export default CreateDiagnosis;

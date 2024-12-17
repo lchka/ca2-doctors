@@ -1,20 +1,35 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
-import { Container, Row, Col, Card, Button, Alert, Collapse } from "react-bootstrap";
+import { Container, Row, Col, Card, Button, Alert, Collapse, Pagination } from "react-bootstrap";
 import { useAuth } from "../../utils/useAuth";
+import "../../styles/Patients.scss"; // Import the SCSS file for consistent styling
 
 const AllDiagnoses = () => {
   const { token } = useAuth();
   const { id } = useParams(); // id is the patient ID from the URL
+  const [patient, setPatient] = useState(null);
   const [diagnoses, setDiagnoses] = useState([]);
   const [error, setError] = useState(null);
   const [expandedPrescriptions, setExpandedPrescriptions] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const diagnosesPerPage = 4;
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchDiagnoses = async () => {
+    const fetchPatientAndDiagnoses = async () => {
       try {
+        // Fetch patient details
+        const patientResponse = await axios.get(
+          `https://fed-medical-clinic-api.vercel.app/patients/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setPatient(patientResponse.data);
+
         // Fetch diagnoses for the specific patient
         const diagnosisResponse = await axios.get(
           `https://fed-medical-clinic-api.vercel.app/diagnoses?patient_id=${id}`,
@@ -58,12 +73,12 @@ const AllDiagnoses = () => {
 
         setDiagnoses(prescriptions);
       } catch (error) {
-        console.error("Error fetching diagnoses or prescriptions:", error);
-        setError("Error fetching diagnoses or prescriptions");
+        console.error("Error fetching patient details, diagnoses, or prescriptions:", error);
+        setError("Error fetching patient details, diagnoses, or prescriptions");
       }
     };
 
-    fetchDiagnoses();
+    fetchPatientAndDiagnoses();
   }, [id, token]);
 
   const handlePrescriptionToggle = (prescriptionId) => {
@@ -73,35 +88,126 @@ const AllDiagnoses = () => {
     }));
   };
 
+  const handleDeleteDiagnosis = async (diagnosisId) => {
+    try {
+      await axios.delete(
+        `https://fed-medical-clinic-api.vercel.app/diagnoses/${diagnosisId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      navigate(`/patients/${id}`, { state: { success: 'Diagnosis deleted successfully.' } });
+    } catch (error) {
+      console.error("Error deleting diagnosis:", error);
+      setError("Error deleting diagnosis");
+    }
+  };
+
+  const handleDeletePrescription = async (prescriptionId) => {
+    try {
+      await axios.delete(
+        `https://fed-medical-clinic-api.vercel.app/prescriptions/${prescriptionId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setDiagnoses((prevDiagnoses) =>
+        prevDiagnoses.map((diagnosis) => ({
+          ...diagnosis,
+          prescriptions: diagnosis.prescriptions.filter(
+            (prescription) => prescription.id !== prescriptionId
+          ),
+        }))
+      );
+    } catch (error) {
+      console.error("Error deleting prescription:", error);
+      setError("Error deleting prescription");
+    }
+  };
+
+  // Pagination logic
+  const indexOfLastDiagnosis = currentPage * diagnosesPerPage;
+  const indexOfFirstDiagnosis = indexOfLastDiagnosis - diagnosesPerPage;
+  const currentDiagnoses = diagnoses.slice(indexOfFirstDiagnosis, indexOfLastDiagnosis);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  const formatDate = (dateString) => {
+    if (typeof dateString !== 'string') {
+      dateString = dateString.toString();
+    }
+    const day = dateString.slice(0, 2);
+    const month = dateString.slice(2, 4) - 1; // Months are zero-indexed in JavaScript
+    const year = '20' + dateString.slice(4, 6); // Assuming the year is in the 2000s
+    const date = new Date(year, month, day);
+    return date.toLocaleDateString();
+  };
+
   return (
     <Container className="mt-4">
       {error && <Alert variant="danger">{error}</Alert>}
       <Row>
         <Col md={12}>
-          <h1>All Diagnoses</h1>
-          {diagnoses.length > 0 ? (
-            diagnoses.map((d) => (
-              <Card className="mb-3" key={d.id}>
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <h1>All Diagnoses for {patient ? patient.first_name : 'Loading...'}</h1>
+            <Button
+              className="editD text-uppercase fw-semibold"
+              onClick={() => navigate(`/diagnoses/create?patient_id=${id}`)}
+            >
+              Add Diagnosis
+            </Button>
+          </div>
+          {currentDiagnoses.length > 0 ? (
+            currentDiagnoses.map((d) => (
+              <Card key={d.id} className="mb-3 rounded-3 shadow-sm editD-card">
                 <Card.Body>
-                  <Card.Title>Condition: {d.condition}</Card.Title>
-                  <Card.Text>Diagnosis Date: {d.diagnosis_date}</Card.Text>
+                  <h3 className="fw-bold">{d.condition}</h3>
+                  <p>
+                    <strong>Date:</strong> {formatDate(d.diagnosis_date)}
+                  </p>
+                  <div className="prescription-buttons">
+                    <Button
+                      className="addP text-uppercase fw-semibold"
+                      variant="secondary"
+                      onClick={() =>
+                        navigate(
+                          `/prescriptions/create?patient_id=${id}&diagnosis_id=${d.id}`
+                        )
+                      }
+                    >
+                      Add Prescription
+                    </Button>
+                    <Button
+                      className="editD text-uppercase fw-semibold"
+                      onClick={() =>
+                        navigate(
+                          `/diagnoses/${d.id}/edit?patient_id=${id}`
+                        )
+                      }
+                    >
+                      Edit Diagnosis
+                    </Button>
+                    <Button
+                      variant="danger"
+                      onClick={() => handleDeleteDiagnosis(d.id)}
+                      className="ms-2 text-uppercase fw-semibold"
+                    >
+                      Delete Diagnosis
+                    </Button>
+                  </div>
 
                   {d.prescriptions.length > 0 ? (
-                    <div>
-                      <h6>Prescriptions</h6>
+                    <div className="prescription-box">
+                      <h4 className="text-uppercase fw-semibold">Prescriptions</h4>
                       {d.prescriptions.map((prescription) => (
                         <div key={prescription.id}>
                           <p>
                             <strong>Medication:</strong> {prescription.medication}
                           </p>
-                          <Button
-                            variant="link"
-                            onClick={() => handlePrescriptionToggle(prescription.id)}
-                          >
-                            {expandedPrescriptions[prescription.id]
-                              ? "View Less"
-                              : "View More"}
-                          </Button>
                           <Collapse in={expandedPrescriptions[prescription.id]}>
                             <div>
                               <p>
@@ -115,6 +221,7 @@ const AllDiagnoses = () => {
                               </p>
                               <div>
                                 <Button
+                                  className="addP text-uppercase fw-semibold"
                                   variant="warning"
                                   onClick={() =>
                                     navigate(`/prescriptions/${prescription.id}/edit`)
@@ -124,43 +231,44 @@ const AllDiagnoses = () => {
                                 </Button>
                                 <Button
                                   variant="danger"
-                                  onClick={() =>
-                                    // Delete prescription logic here
-                                    console.log(`Deleting prescription ${prescription.id}`)
-                                  }
-                                  className="ms-2"
+                                  onClick={() => handleDeletePrescription(prescription.id)}
+                                  className="ms-2 text-uppercase fw-semibold"
                                 >
                                   Delete Prescription
                                 </Button>
                               </div>
                             </div>
                           </Collapse>
+                          <Button
+                            className="view-more-less text-center fw-6 text-uppercase fw-semibold"
+                            variant="link"
+                            onClick={() => handlePrescriptionToggle(prescription.id)}
+                          >
+                            {expandedPrescriptions[prescription.id]
+                              ? "View Less"
+                              : "View More"}
+                          </Button>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <Card.Text>No prescription available</Card.Text>
+                    <p>No prescriptions for this diagnosis.</p>
                   )}
-
-                  <Button
-                    variant="primary"
-                    onClick={() => navigate(`/diagnoses/${d.id}/edit`)}
-                  >
-                    Edit Diagnosis
-                  </Button>
                 </Card.Body>
               </Card>
             ))
           ) : (
             <p>No diagnoses found.</p>
           )}
-          <Button
-            variant="primary"
-            className="mt-3"
-            onClick={() => navigate(`/diagnoses/create?patient_id=${id}`)}
-          >
-            Add Diagnosis
-          </Button>
+          {diagnoses.length > diagnosesPerPage && (
+            <Pagination className="mt-3 justify-content-center">
+              {[...Array(Math.ceil(diagnoses.length / diagnosesPerPage)).keys()].map(number => (
+                <Pagination.Item key={number + 1} active={number + 1 === currentPage} onClick={() => paginate(number + 1)}>
+                  {number + 1}
+                </Pagination.Item>
+              ))}
+            </Pagination>
+          )}
         </Col>
       </Row>
     </Container>

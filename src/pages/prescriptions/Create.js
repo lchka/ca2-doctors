@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
-import axios from 'axios';
+import { useState } from "react";
+import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Form, Button, Container, Alert } from 'react-bootstrap';
-import { useAuth } from '../../utils/useAuth';
-import DoctorDropDown from '../../components/DoctorDropDown';
+import { Form, Button, Container, Alert } from "react-bootstrap";
+import { useAuth } from "../../utils/useAuth";
+import DoctorDropDown from "../../components/DoctorDropDown";
+import "../../styles/CreateForm.scss"; // Import the SCSS file for consistent form styling
 
 const Create = () => {
     const { token } = useAuth();
@@ -12,114 +13,97 @@ const Create = () => {
 
     // Get the diagnosis_id and patient_id from the URL query parameters
     const queryParams = new URLSearchParams(location.search);
-    const diagnosis_id = queryParams.get('diagnosis_id');
-    const patient_id = queryParams.get('patient_id');
+    const diagnosis_id = queryParams.get("diagnosis_id");
+    const patient_id = queryParams.get("patient_id");
 
     const [form, setForm] = useState({
-        medication: '',
-        dosage: '',
-        start_date: '',  // Keep as string
-        end_date: '',    // Keep as string
-        diagnosis_id: diagnosis_id || '', // Prefill the diagnosis_id from the URL
-        patient_id: patient_id || '', // Prefill the patient_id from the URL
-        doctor_id: '', // New field for doctor_id
+        medication: "",
+        dosage: "",
+        start_date: "", // Expecting 6 digits: ddmmyy
+        end_date: "",   // Expecting 6 digits: ddmmyy
+        diagnosis_id: diagnosis_id || "",
+        patient_id: patient_id || "",
+        doctor_id: "",
     });
 
-    const [doctors, setDoctors] = useState([]); // Store the list of doctors
     const [error, setError] = useState(null); // To store API error messages
 
-    // Fetch doctors from the API (replace with your actual API endpoint)
-    useEffect(() => {
-        const fetchDoctors = async () => {
-            try {
-                const response = await axios.get('https://fed-medical-clinic-api.vercel.app/doctors', {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    }
-                });
-                setDoctors(response.data); // Assuming the response contains an array of doctor objects
-            } catch (err) {
-                console.error("Error fetching doctors:", err);
-                setError("Failed to load doctors.");
-            }
-        };
-
-        fetchDoctors();
-    }, [token]);
+    // Utility to validate dates (6 digits only)
+    const isValidDate = (date) => /^\d{6}$/.test(date);
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
+        let { name, value } = e.target;
 
-        // If the field is diagnosis_id, patient_id, or doctor_id, ensure the value is an integer
-        if (name === 'diagnosis_id' || name === 'patient_id' || name === 'doctor_id') {
-            // Only set the value if it's an integer
-            if (value === '' || /^[0-9\b]+$/.test(value)) {
-                setForm({
-                    ...form,
-                    [name]: value
-                });
-            }
-        } else {
-            setForm({
-                ...form,
-                [name]: value
-            });
+        // Sanitize date input fields to allow only 6 digits
+        if (name === "start_date" || name === "end_date") {
+            value = value.replace(/\D/g, "").slice(0, 6); // Only digits, max 6 characters
         }
-    };
 
-    const handleDoctorSelect = (doctorId) => {
-        console.log('Selected doctor ID in handleDoctorSelect:', doctorId);  // Log selected doctor ID
         setForm({
             ...form,
-            doctor_id: doctorId,  // Set doctor_id as the selected doctor ID (number)
+            [name]: value,
+        });
+    };
+
+    const handleDoctorChange = (doctor_id) => {
+        setForm({
+            ...form,
+            doctor_id,
         });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        // Debugging message: Log the form data before submission
-        console.log('Form data before submission:', form);
-
-        // Convert the numeric fields to numbers before submission
-        const formData = {
+    
+        // Ensure ID fields are numbers
+        const payload = {
             ...form,
-            diagnosis_id: Number(form.diagnosis_id),
             patient_id: Number(form.patient_id),
-            doctor_id: Number(form.doctor_id),  // Ensure doctor_id is a number
+            doctor_id: Number(form.doctor_id),
+            diagnosis_id: Number(form.diagnosis_id),
         };
-
+    
+        console.log("Form data after conversion:", payload); // Debugging
+    
+        // Validate dates
+        if (!isValidDate(payload.start_date) || !isValidDate(payload.end_date)) {
+            setError("Start Date and End Date must be exactly 6 digits (ddmmyy).");
+            return;
+        }
+    
         try {
-            // Post request to create prescription
-            await axios.post('https://fed-medical-clinic-api.vercel.app/prescriptions', formData, {
-                headers: {
-                    Authorization: `Bearer ${token}`
+            const response = await axios.post(
+                "https://fed-medical-clinic-api.vercel.app/prescriptions",
+                payload,
+                {
+                    headers: { Authorization: `Bearer ${token}` },
                 }
+            );
+    
+            console.log("API Response:", response.data); // Debugging
+    
+            navigate(`/patient/${payload.patient_id}`, {
+                state: { success: "Prescription successfully created!" },
             });
-
-            // Debugging message: Log successful submission
-            console.log('Prescription created successfully.');
-
-            navigate(`/diagnoses/${form.diagnosis_id}`); // Navigate back to the diagnosis page after successful creation
-        } catch (error) {
-            // Debugging message: Log error response
-            console.error('Error creating prescription:', error.response ? error.response.data : error);
-
-            if (error.response && error.response.data && error.response.data.message) {
-                setError(error.response.data.message); // Set the API validation message
+        } catch (err) {
+            console.error("Error creating prescription:", err);
+    
+            if (err.response) {
+                console.error("API error response:", JSON.stringify(err.response.data, null, 2));
+                setError(err.response.data.error || "An unknown error occurred.");
             } else {
-                setError('An error occurred while creating the prescription.'); // General error message
+                setError("Network error or no response from server.");
             }
         }
     };
+    
 
     return (
-        <Container className="mt-4">
+        <Container className="create-form-container my-5">
             <h1>Create Prescription</h1>
-            {error && <Alert variant="danger">{error}</Alert>}  {/* Display error message here */}
-
-            <Form onSubmit={handleSubmit}>
-                <Form.Group controlId="formMedication">
+            {error && <Alert variant="danger">{error}</Alert>}
+            <Form onSubmit={handleSubmit} className="create-form p-4 rounded shadow">
+                <Form.Group controlId="formMedication" className="mb-3">
                     <Form.Label>Medication</Form.Label>
                     <Form.Control
                         type="text"
@@ -127,10 +111,11 @@ const Create = () => {
                         name="medication"
                         value={form.medication}
                         onChange={handleChange}
+                        required
                     />
                 </Form.Group>
 
-                <Form.Group controlId="formDosage">
+                <Form.Group controlId="formDosage" className="mb-3">
                     <Form.Label>Dosage</Form.Label>
                     <Form.Control
                         type="text"
@@ -138,66 +123,66 @@ const Create = () => {
                         name="dosage"
                         value={form.dosage}
                         onChange={handleChange}
+                        required
                     />
                 </Form.Group>
 
-                <Form.Group controlId="formStartDate">
+                <Form.Group controlId="formStartDate" className="mb-3">
                     <Form.Label>Start Date</Form.Label>
                     <Form.Control
-                        type="text"  // Changed from date to text
-                        placeholder="Enter start date (e.g., YYYY-MM-DD)"
+                        type="text"
+                        placeholder="Enter start date (ddmmyy)"
                         name="start_date"
                         value={form.start_date}
                         onChange={handleChange}
+                        maxLength={6}
+                        required
                     />
                 </Form.Group>
 
-                <Form.Group controlId="formEndDate">
+                <Form.Group controlId="formEndDate" className="mb-3">
                     <Form.Label>End Date</Form.Label>
                     <Form.Control
-                        type="text"  // Changed from date to text
-                        placeholder="Enter end date (e.g., YYYY-MM-DD)"
+                        type="text"
+                        placeholder="Enter end date (ddmmyy)"
                         name="end_date"
                         value={form.end_date}
                         onChange={handleChange}
+                        maxLength={6}
+                        required
                     />
                 </Form.Group>
 
-                {/* Diagnosis ID input field with integer validation */}
-                <Form.Group controlId="formDiagnosisId">
+                <Form.Group controlId="formDiagnosisId" className="mb-3">
                     <Form.Label>Diagnosis ID</Form.Label>
                     <Form.Control
-                        type="number" // Changed to type="number" to accept integers only
-                        placeholder="Enter Diagnosis ID"
+                        type="text"
                         name="diagnosis_id"
                         value={form.diagnosis_id}
-                        onChange={handleChange}
                         readOnly
                     />
                 </Form.Group>
 
-                {/* Patient ID input field with integer validation */}
-                <Form.Group controlId="formPatientId">
+                <Form.Group controlId="formPatientId" className="mb-3">
                     <Form.Label>Patient ID</Form.Label>
                     <Form.Control
-                        type="number" // Changed to type="number" to accept integers only
-                        placeholder="Enter Patient ID"
+                        type="text"
                         name="patient_id"
                         value={form.patient_id}
-                        onChange={handleChange}
                         readOnly
                     />
                 </Form.Group>
 
-                {/* Doctor ID dropdown */}
-                <DoctorDropDown
-                    doctors={doctors}
-                    selectedDoctorId={form.doctor_id}
-                    onDoctorSelect={handleDoctorSelect}
-                />
+                <Form.Group controlId="formDoctorId" className="mb-3">
+                    <Form.Label>Doctor</Form.Label>
+                    <DoctorDropDown
+                        selectedDoctorId={form.doctor_id}
+                        onDoctorChange={handleDoctorChange}
+                    />
+                </Form.Group>
 
-                <Button variant="primary" type="submit" className="mt-3">
-                    Create Prescription
+                <Button variant="primary" type="submit" className="w-100">
+                    Create
                 </Button>
             </Form>
         </Container>

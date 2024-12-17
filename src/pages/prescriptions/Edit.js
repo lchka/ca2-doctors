@@ -3,6 +3,8 @@ import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { Container, Form, Button, Alert } from "react-bootstrap";
 import { useAuth } from "../../utils/useAuth";
+import DoctorDropDown from "../../components/DoctorDropDown";
+import "../../styles/CreateForm.scss"; // Import the SCSS file for consistent form styling
 
 const EditPrescription = () => {
   const { token } = useAuth();
@@ -29,6 +31,7 @@ const EditPrescription = () => {
             },
           }
         );
+        console.log("Fetched prescription data:", response.data); // Debugging log
         setForm(response.data);
       } catch (error) {
         console.error("Error fetching prescription:", error);
@@ -46,57 +49,77 @@ const EditPrescription = () => {
     });
   };
 
+  const handleDoctorChange = (doctor_id) => {
+    setForm({
+      ...form,
+      doctor_id,
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Convert necessary fields to numbers before submitting
+    const payload = {
+      ...form,
+      patient_id: Number(form.patient_id),
+      doctor_id: Number(form.doctor_id),
+    };
+
+    console.log("Form data before submission:", payload); // Debugging log
+
     try {
-      await axios.patch(
+      const response = await axios.patch(
         `https://fed-medical-clinic-api.vercel.app/prescriptions/${id}`,
-        form,
+        payload,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      navigate(`/patient/${form.patient_id}`); // Navigate back to the single patient page after successful update
+
+      console.log("API Response:", response.data); // Debugging log
+      navigate(`/patient/${form.patient_id}`); // Navigate back after success
     } catch (error) {
       console.error("Error updating prescription:", error);
-      setError(
-        error.response
-          ? error.response.data.message
-          : "Error updating prescription"
-      );
+
+      if (error.response) {
+        console.error(
+          "Full API error response:",
+          JSON.stringify(error.response.data, null, 2)
+        );
+        setError(error.response.data.error || "Error updating prescription");
+      } else {
+        setError("Network error or no response from server.");
+      }
     }
   };
 
   return (
-    <Container className="mt-4">
+    <Container className="create-form-container my-5">
       <h1>Edit Prescription</h1>
       {error && <Alert variant="danger">{error}</Alert>}
-      <Form onSubmit={handleSubmit}>
-        <Form.Group controlId="formPatientId">
+      <Form onSubmit={handleSubmit} className="create-form p-4 rounded shadow">
+        <Form.Group controlId="formPatientId" className="mb-3">
           <Form.Label>Patient ID</Form.Label>
           <Form.Control
-            type="text"
-            placeholder="Enter patient ID"
+            type="number"
             name="patient_id"
             value={form.patient_id}
-            onChange={handleChange}
+            readOnly
           />
         </Form.Group>
 
-        <Form.Group controlId="formDoctorId">
-          <Form.Label>Doctor ID</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="Enter doctor ID"
-            name="doctor_id"
-            value={form.doctor_id}
-            onChange={handleChange}
+        <Form.Group controlId="formDoctorId" className="mb-3">
+          <Form.Label>Doctor</Form.Label>
+          <DoctorDropDown
+            selectedDoctorId={form.doctor_id}
+            onDoctorChange={handleDoctorChange}
           />
         </Form.Group>
 
-        <Form.Group controlId="formMedication">
+        <Form.Group controlId="formMedication" className="mb-3">
           <Form.Label>Medication</Form.Label>
           <Form.Control
             type="text"
@@ -104,10 +127,11 @@ const EditPrescription = () => {
             name="medication"
             value={form.medication}
             onChange={handleChange}
+            required
           />
         </Form.Group>
 
-        <Form.Group controlId="formDosage">
+        <Form.Group controlId="formDosage" className="mb-3">
           <Form.Label>Dosage</Form.Label>
           <Form.Control
             type="text"
@@ -115,32 +139,35 @@ const EditPrescription = () => {
             name="dosage"
             value={form.dosage}
             onChange={handleChange}
+            required
           />
         </Form.Group>
 
-        <Form.Group controlId="formStartDate">
+        <Form.Group controlId="formStartDate" className="mb-3">
           <Form.Label>Start Date</Form.Label>
           <Form.Control
             type="text"
-            placeholder="Enter start date"
+            placeholder="Enter start date (ddmmyy)"
             name="start_date"
             value={form.start_date}
             onChange={handleChange}
+            required
           />
         </Form.Group>
 
-        <Form.Group controlId="formEndDate">
+        <Form.Group controlId="formEndDate" className="mb-3">
           <Form.Label>End Date</Form.Label>
           <Form.Control
             type="text"
-            placeholder="Enter end date"
+            placeholder="Enter end date (ddmmyy)"
             name="end_date"
             value={form.end_date}
             onChange={handleChange}
+            required
           />
         </Form.Group>
 
-        <Button variant="primary" type="submit" className="mt-3">
+        <Button variant="primary" type="submit" className="w-100">
           Update
         </Button>
       </Form>

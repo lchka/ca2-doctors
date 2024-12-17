@@ -9,6 +9,7 @@ import {
   Button,
   Image,
   Collapse,
+  Card,
 } from "react-bootstrap";
 import { useAuth } from "../../utils/useAuth";
 import "../../styles/Patients.scss"; // Import the SCSS file for smooth animations
@@ -21,6 +22,7 @@ const SinglePatient = () => {
   const [prescriptions, setPrescriptions] = useState([]);
   const [doctors, setDoctors] = useState({});
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
   const { id } = useParams();
   const navigate = useNavigate();
   const { state } = useLocation();
@@ -28,6 +30,10 @@ const SinglePatient = () => {
   const [expandedPrescriptions, setExpandedPrescriptions] = useState({});
 
   useEffect(() => {
+    if (state && state.success) {
+      setSuccess(state.success);
+    }
+
     const fetchPatientData = async () => {
       try {
         const patientResponse = await axios.get(
@@ -94,7 +100,7 @@ const SinglePatient = () => {
     };
 
     fetchPatientData();
-  }, [id, token]);
+  }, [id, token, state]);
 
   const handlePrescriptionToggle = (prescriptionId) => {
     setExpandedPrescriptions((prevState) => ({
@@ -116,6 +122,7 @@ const SinglePatient = () => {
       setDiagnoses(
         diagnoses.filter((diagnosis) => diagnosis.id !== diagnosisId)
       );
+      setSuccess("Diagnosis deleted successfully.");
     } catch (error) {
       console.error("Error deleting diagnosis:", error);
       setError("Error deleting diagnosis");
@@ -137,6 +144,7 @@ const SinglePatient = () => {
           (prescription) => prescription.id !== prescriptionId
         )
       );
+      setSuccess("Prescription deleted successfully.");
     } catch (error) {
       console.error("Error deleting prescription:", error);
       setError("Error deleting prescription");
@@ -168,13 +176,20 @@ const SinglePatient = () => {
     return "Loading...";
   }
 
+  const formatDate = (dateString) => {
+    if (typeof dateString !== 'string') {
+      dateString = dateString.toString();
+    }
+    const day = dateString.slice(0, 2);
+    const month = dateString.slice(2, 4) - 1; // Months are zero-indexed in JavaScript
+    const year = '20' + dateString.slice(4, 6); // Assuming the year is in the 2000s
+    const date = new Date(year, month, day);
+    return date.toLocaleDateString();
+  };
+
   return (
     <Container className="mt-4">
-      {state && state.success && (
-        <Alert variant="info">
-          {state.success}
-        </Alert>
-      )}
+      {success && <Alert variant="info">{success}</Alert>}
       {error && <Alert variant="danger">{error}</Alert>}
       <Row>
         {/* Left Section (Patient Info + Image) */}
@@ -197,7 +212,7 @@ const SinglePatient = () => {
                 </p>
                 <p className="fs-5">
                   <strong>Date of Birth: </strong>
-                  {patient.date_of_birth}
+                  {formatDate(patient.date_of_birth)}
                 </p>
                 <p className="fs-5"><strong>Address:</strong> {patient.address}</p>
               </div>
@@ -221,125 +236,140 @@ const SinglePatient = () => {
 
         {/* Right Section (Conditions) */}
         <Col md={6}>
-          <div className="conditions-section p-3 rounded-3 animate-right">
-            <h3 className="mb-3">Conditions</h3>
+          <div className="conditions-section p-3 mb-2 rounded-3 animate-right">
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h3 className="mb-0">Conditions</h3>
+              <Button
+                className="editD text-uppercase fw-semibold"
+                onClick={() => navigate(`/diagnoses/create?patient_id=${id}`)}
+              >
+                Add Diagnosis
+              </Button>
+            </div>
             {diagnoses.length > 0 ? (
-              diagnoses.map((diagnosis) => (
-                <div key={diagnosis.id} className="mb-3">
-                  <h5>{diagnosis.condition}</h5>
-                  <p>
-                    <strong>Date:</strong> {diagnosis.date}
-                  </p>
-                  <p>
-                    <strong>Notes:</strong> {diagnosis.notes}
-                  </p>
-                  <div>
-                    {/* Buttons for Add/Edit Prescription */}
-                    <Button
-                      variant="secondary"
-                      onClick={() =>
-                        navigate(
-                          `/prescriptions/create?patient_id=${id}&diagnosis_id=${diagnosis.id}`
-                        )
-                      }
-                    >
-                      Add Prescription
-                    </Button>
-                    <Button
-                      variant="warning"
-                      onClick={() =>
-                        navigate(
-                          `/diagnoses/${diagnosis.id}/edit?patient_id=${id}`
-                        )
-                      }
-                    >
-                      Edit Diagnosis
-                    </Button>
-                    {/* Delete Diagnosis Button */}
-                    <Button
-                      variant="danger"
-                      onClick={() => handleDeleteDiagnosis(diagnosis.id)}
-                      className="ms-2"
-                    >
-                      Delete Diagnosis
-                    </Button>
-                  </div>
-
-                  {/* Prescriptions and Edit Prescription Button */}
-                  {prescriptions.filter(
-                    (prescription) => prescription.diagnosis_id === diagnosis.id
-                  ).length > 0 ? (
-                    <div>
-                      <h6>Prescriptions</h6>
-                      {prescriptions
-                        .filter(
-                          (prescription) =>
-                            prescription.diagnosis_id === diagnosis.id
-                        )
-                        .map((prescription) => (
-                          <div key={prescription.id}>
-                            <p>
-                              <strong>Medication:</strong>{" "}
-                              {prescription.medication}
-                            </p>
-                            <Button
-                              variant="link"
-                              onClick={() =>
-                                handlePrescriptionToggle(prescription.id)
-                              }
-                            >
-                              {expandedPrescriptions[prescription.id]
-                                ? "View Less"
-                                : "View more"}
-                            </Button>
-                            <Collapse
-                              in={expandedPrescriptions[prescription.id]}
-                            >
-                              <div>
-                                <p>
-                                  <strong>Dosage:</strong> {prescription.dosage}
-                                </p>
-                                <p>
-                                  <strong>Doctor:</strong>{" "}
-                                  {doctors[prescription.doctor_id] || "Unknown"}
-                                </p>
-                                <p>
-                                  <strong>Prescription Period:</strong>{" "}
-                                  {prescription.start_date} to{" "}
-                                  {prescription.end_date}
-                                </p>
-                                <div>
-                                  {/* Edit Prescription Button */}
-                                  <Button
-                                    variant="warning"
-                                    onClick={() =>
-                                      navigate(
-                                        `/prescriptions/${prescription.id}/edit`
-                                      )
-                                    }
-                                  >
-                                    Edit Prescription
-                                  </Button>
-                                  {/* Delete Prescription Button */}
-                                  <Button
-                                    variant="danger"
-                                    onClick={() =>
-                                      handleDeletePrescription(prescription.id)
-                                    }
-                                    className="ms-2"
-                                  >
-                                    Delete Prescription
-                                  </Button>
-                                </div>
-                              </div>
-                            </Collapse>
-                          </div>
-                        ))}
+              diagnoses.slice(0, 2).map((diagnosis) => (
+                <Card key={diagnosis.id} className="mb-3 rounded-3 shadow-sm editD-card">
+                  <Card.Body>
+                    <h3 className="fw-bold">{diagnosis.condition}</h3>
+                    <p>
+                      <strong>Date:</strong> {formatDate(diagnosis.diagnosis_date)}
+                    </p>
+                    <p>
+                      <strong>Notes:</strong> {diagnosis.notes}
+                    </p>
+                    <div className="prescription-buttons">
+                      {/* Buttons for Add/Edit Prescription */}
+                      <Button
+                        className="addP text-uppercase fw-semibold"
+                        variant="secondary"
+                        onClick={() =>
+                          navigate(
+                            `/prescriptions/create?patient_id=${id}&diagnosis_id=${diagnosis.id}`
+                          )
+                        }
+                      >
+                        Add Prescription
+                      </Button>
+                      <Button
+                        className="editD text-uppercase fw-semibold"
+                        onClick={() =>
+                          navigate(
+                            `/diagnoses/${diagnosis.id}/edit?patient_id=${id}`
+                          )
+                        }
+                      >
+                        Edit Diagnosis
+                      </Button>
+                      {/* Delete Diagnosis Button */}
+                      <Button
+                        variant="danger"
+                        onClick={() => handleDeleteDiagnosis(diagnosis.id)}
+                        className="ms-2 text-uppercase fw-semibold"
+                      >
+                        Delete Diagnosis
+                      </Button>
                     </div>
-                  ) : (
-                    <p>No prescriptions for this diagnosis.</p>
-                  )}
-                </div>
+
+                    {/* Prescriptions and Edit Prescription Button */}
+                    {prescriptions.filter(
+                      (prescription) => prescription.diagnosis_id === diagnosis.id
+                    ).length > 0 ? (
+                      <div className="prescription-box">
+                        <h4 className="text-uppercase fw-semibold">Prescriptions</h4>
+                        {prescriptions
+                          .filter(
+                            (prescription) =>
+                              prescription.diagnosis_id === diagnosis.id
+                          )
+                          .map((prescription) => (
+                            <div key={prescription.id}>
+                              <p>
+                                <strong>Medication:</strong>{" "}
+                                {prescription.medication}
+                              </p>
+                              <Collapse
+                                in={expandedPrescriptions[prescription.id]}
+                              >
+                                <div>
+                                  <p>
+                                    <strong>Dosage:</strong>{" "}
+                                    {prescription.dosage}
+                                  </p>
+                                  <p>
+                                    <strong>Doctor:</strong>{" "}
+                                    {doctors[prescription.doctor_id] ||
+                                      "Unknown"}
+                                  </p>
+                                  <p>
+                                    <strong>Prescription Period:</strong>{" "}
+                                    {formatDate(prescription.start_date)} to{" "}
+                                    {formatDate(prescription.end_date)}
+                                  </p>
+                                  <div>
+                                    {/* Edit Prescription Button */}
+                                    <Button
+                                    className="addP text-uppercase fw-semibold "
+                                      variant="warning"
+                                      onClick={() =>
+                                        navigate(
+                                          `/prescriptions/${prescription.id}/edit`
+                                        )
+                                      }
+                                    >
+                                      Edit Prescription
+                                    </Button>
+                                    {/* Delete Prescription Button */}
+                                    <Button
+                                      variant="danger"
+                                      onClick={() =>
+                                        handleDeletePrescription(prescription.id)
+                                      }
+                                      className=" text-uppercase fw-semibold"
+                                    >
+                                      Delete Prescription
+                                    </Button>
+                                  </div>
+                                </div>
+                              </Collapse>
+                              <Button
+                                className="view-more-less text-center fw-6 text-uppercase fw-semibold"
+                                variant="link"
+                                onClick={() =>
+                                  handlePrescriptionToggle(prescription.id)
+                                }
+                              >
+                                {expandedPrescriptions[prescription.id]
+                                  ? "View Less"
+                                  : "View More"}
+                              </Button>
+                            </div>
+                          ))}
+                      </div>
+                    ) : (
+                      <p>No prescriptions for this diagnosis.</p>
+                    )}
+                  </Card.Body>
+                </Card>
               ))
             ) : (
               <p>No conditions found.</p>

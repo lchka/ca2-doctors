@@ -58,6 +58,8 @@ const SingleDoctor = () => {
                     <Card.Title className="fw-bold">Doctor Details</Card.Title>
                     <Card.Text>First Name: {doctor.first_name}</Card.Text>
                     <Card.Text>Last Name: {doctor.last_name}</Card.Text>
+                    <Card.Text>Email: {doctor.email}</Card.Text>
+                    <Card.Text>Phone: {doctor.phone}</Card.Text>
                     <Card.Text>Specialisation: {doctor.specialisation}</Card.Text>
                     <Button variant="primary" className="btn-view-details text-uppercase fw-semibold rounded-3 me-2" onClick={() => navigate(`/doctors/${id}/edit`)}>Edit Doctor</Button>
                     <Button className="btn-delete text-uppercase fw-semibold rounded-3" onClick={handleDelete}>Delete Doctor</Button>
