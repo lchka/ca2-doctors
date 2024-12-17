@@ -37,9 +37,7 @@ const LoginForm = () => {
     <Container className="login-form-container my-5">
       <Row className="justify-content-center">
         <Col md={6}>
-          <Alert variant="warning" className="text-center">
-            Oops! If you're brought here, you must log in to view this info!
-          </Alert>
+          
           {error && <Alert variant="danger" className="text-center">{error}</Alert>}
           <Form onSubmit={handleSubmit} className="login-form p-4 rounded shadow">
             <h2 className="text-center mb-4">Login</h2>

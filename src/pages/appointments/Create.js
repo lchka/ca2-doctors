@@ -1,85 +1,104 @@
-import { useState } from "react";
-import axios from 'axios';
-import { useNavigate } from "react-router-dom";
-import { Form, Button, Container, Alert } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../utils/useAuth';
+import { Form, Button, Container, Row, Col, Alert } from 'react-bootstrap';
+import DoctorDropdown from '../../components/DoctorDropDown';
+import PatientDropdown from '../../components/PatientDropDown';
+import '../../styles/CreateForm.scss';
 
 const Create = () => {
-    const [form, setForm] = useState({
-        appointment_date: '',
-        doctor_id: '',
-        patient_id: ''
+  const navigate = useNavigate();
+  const { token } = useAuth();
+
+  const [form, setForm] = useState({
+    patient_id: '',
+    appointment_date: '',
+    doctor_id: '',
+  });
+
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!token) {
+      navigate('/register');
+    }
+  }, [token, navigate]);
+
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
     });
-    const [error, setError] = useState(null);
-    const navigate = useNavigate();
-    const { token } = useAuth();
+  };
 
-    const handleChange = (e) => {
-        setForm({
-            ...form,
-            [e.target.name]: e.target.value
-        });
-    };
+  const handleDoctorChange = (doctor_id) => {
+    setForm({
+      ...form,
+      doctor_id,
+    });
+  };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            await axios.post('https://fed-medical-clinic-api.vercel.app/appointments', form, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            navigate('/appointments'); // Navigate to the appointments list page after successful creation
-        } catch (error) {
-            console.error('Error creating appointment:', error);
-            setError('Error creating appointment');
-        }
-    };
+  const handlePatientChange = (patient_id) => {
+    setForm({
+      ...form,
+      patient_id,
+    });
+  };
 
-    return (
-        <Container className="mt-4">
-            <h1>Create Appointment</h1>
-            {error && <Alert variant="danger">{error}</Alert>}
-            <Form onSubmit={handleSubmit}>
-                <Form.Group controlId="formAppointmentDate">
-                    <Form.Label>Appointment Date</Form.Label>
-                    <Form.Control
-                        type="text"
-                        placeholder="Enter appointment date"
-                        name="appointment_date"
-                        value={form.appointment_date}
-                        onChange={handleChange}
-                    />
-                </Form.Group>
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      // Add your API call here to create the appointment
+      // Example:
+      // await axios.post('https://your-api-url.com/appointments', form, {
+      //   headers: { Authorization: `Bearer ${token}` },
+      // });
+      navigate('/appointments');
+    } catch (err) {
+      setError('Failed to create appointment. Please try again.');
+    }
+  };
 
-                <Form.Group controlId="formDoctorId">
-                    <Form.Label>Doctor ID</Form.Label>
-                    <Form.Control
-                        type="text"
-                        placeholder="Enter doctor ID"
-                        name="doctor_id"
-                        value={form.doctor_id}
-                        onChange={handleChange}
-                    />
-                </Form.Group>
-
-                <Form.Group controlId="formPatientId">
-                    <Form.Label>Patient ID</Form.Label>
-                    <Form.Control
-                        type="text"
-                        placeholder="Enter patient ID"
-                        name="patient_id"
-                        value={form.patient_id}
-                        onChange={handleChange}
-                    />
-                </Form.Group>
-
-                <Button variant="primary" type="submit" className="mt-3">
-                    Create
-                </Button>
-            </Form>
-        </Container>
-    );
+  return (
+    <Container className="create-form-container my-5">
+      <Row className="justify-content-center">
+        <Col md={6}>
+          {error && <Alert variant="danger" className="text-center">{error}</Alert>}
+          <Form onSubmit={handleSubmit} className="create-form p-4 rounded shadow">
+            <h2 className="text-center mb-4">Create Appointment</h2>
+            <Form.Group controlId="formPatientId" className="mb-3">
+              <Form.Label>Patient</Form.Label>
+              <PatientDropdown
+                selectedPatientId={form.patient_id}
+                onPatientChange={handlePatientChange}
+              />
+            </Form.Group>
+            <Form.Group controlId="formAppointmentDate" className="mb-3">
+              <Form.Label>Appointment Date</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Format: ddmmyy"
+                name="appointment_date"
+                value={form.appointment_date}
+                onChange={handleChange}
+                required
+              />
+            </Form.Group>
+            <Form.Group controlId="formDoctorId" className="mb-3">
+              <Form.Label>Doctor</Form.Label>
+              <DoctorDropdown
+                selectedDoctorId={form.doctor_id}
+                onDoctorChange={handleDoctorChange}
+              />
+            </Form.Group>
+            <Button variant="primary" type="submit" className="w-100">
+              Create
+            </Button>
+          </Form>
+        </Col>
+      </Row>
+    </Container>
+  );
 };
 
 export default Create;

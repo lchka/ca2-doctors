@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../utils/useAuth';
 import axios from 'axios';
 import { Form, Button, Container, Row, Col, Alert } from 'react-bootstrap';
@@ -41,8 +41,8 @@ const RegisterForm = () => {
     <Container className="register-form-container my-5">
       <Row className="justify-content-center">
         <Col md={6}>
-          <Alert variant="warning" className="text-center">
-            Please fill in the form to register.
+        <Alert variant="warning" className="text-center">
+            Oops! If you're brought here, you must log/register in to view this info!
           </Alert>
           {error && <Alert variant="danger" className="text-center">{error}</Alert>}
           <Form onSubmit={handleSubmit} className="register-form p-4 rounded shadow">
@@ -95,6 +95,11 @@ const RegisterForm = () => {
               Register
             </Button>
           </Form>
+          <div className="text-center mt-3">
+            <p>
+              Already have an account? <Link to="/login">Log in here</Link>
+            </p>
+          </div>
         </Col>
       </Row>
     </Container>

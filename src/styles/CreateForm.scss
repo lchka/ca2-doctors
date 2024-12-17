@@ -1,0 +1,22 @@
+.create-form-container {
+    margin-top: 50px;
+  }
+  
+  .create-form {
+    background-color: #f0f8ff; // Light blue background
+    border: 1px solid #d1e7ff; // Light blue border
+  }
+  
+  .create-form .form-control {
+    border-radius: 5px; // Rounded corners for input fields
+  }
+  
+  .create-form .btn-primary {
+    background-color: rgb(80, 144, 255); // Updated button background color
+    border-color: rgb(80, 144, 255); // Updated button border color
+  }
+  
+  .create-form .btn-primary:hover {
+    background-color: #0056b3; // Darker blue on hover
+    border-color: #0056b3; // Darker blue border on hover
+  }
