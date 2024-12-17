@@ -45,35 +45,37 @@ const App = () => {
                         <Routes>
                             <Route path="/" element={<Home />} />
                             {/* Doctor routes */}
-                            <Route path="/doctor/:id" element={<SingleDoctor />} />
-                            <Route path="/doctor/create" element={<CreateDoctor />} />
-                            <Route path="/doctors/:id/edit" element={<EditDoctor />} />
+                            
                             <Route path="/doctors" element={<Doctors />} />
                             {/* Patient routes */}
                             <Route path="/patients" element={<Patients />} />
-                            <Route path="/patients/create" element={<CreatePatient />} />
-                            <Route path="/patients/:id/edit" element={<EditPatient />} />
-                            <Route path="/patient/:id" element={<SinglePatient />} />
-                            {/* Prescription routes */}
-                            <Route path="/prescriptions" element={<Prescriptions />} /> 
-                            <Route path="/prescriptions/create" element={<CreatePrescription />} /> 
-                            <Route path="/prescriptions/:id" element={<SinglePrescription />} /> 
-                            <Route path="/prescriptions/:id/edit" element={<EditPrescription />} /> 
-                            {/* Diagnosis routes */}
-                            <Route path="/patients/:id/diagnoses" element={<AllDiagnoses />} />
-                            <Route path="/diagnoses" element={<Diagnoses />} /> 
-                            <Route path="/diagnoses/create" element={<CreateDiagnose />} /> 
-                            <Route path="/diagnoses/:id" element={<SingleDiagnose />} /> 
-                            <Route path="/diagnoses/:id/edit" element={<EditDiagnose />} /> 
-                            {/* Appointment routes */}
-                            <Route path="/appointments" element={<Appointments />} /> 
-                            <Route path="/appointments/create" element={<CreateAppointment />} /> 
-                            <Route path="/appointments/:id" element={<SingleAppointment />} /> 
-                            <Route path="/appointments/:id/edit" element={<EditAppointment />} /> 
                             {/* Authentication routes */}
                             <Route path="/login" element={<LoginForm />} />
                             <Route path="/register" element={<RegisterForm />} />
-                            <Route path="/protected" element={<ProtectedRoute />} />
+                            <Route element={<ProtectedRoute />}>
+                            <Route path="/doctor/:id" element={<SingleDoctor />} />
+                                <Route path="/doctor/create" element={<CreateDoctor />} />
+                                <Route path="/doctors/:id/edit" element={<EditDoctor />} />
+                                <Route path="/patients/create" element={<CreatePatient />} />
+                                <Route path="/patients/:id/edit" element={<EditPatient />} />
+                                <Route path="/patient/:id" element={<SinglePatient />} />
+                                {/* Prescription routes */}
+                                <Route path="/prescriptions" element={<Prescriptions />} /> 
+                                <Route path="/prescriptions/create" element={<CreatePrescription />} /> 
+                                <Route path="/prescriptions/:id" element={<SinglePrescription />} /> 
+                                <Route path="/prescriptions/:id/edit" element={<EditPrescription />} /> 
+                                {/* Diagnosis routes */}
+                                <Route path="/patients/:id/diagnoses" element={<AllDiagnoses />} />
+                                <Route path="/diagnoses" element={<Diagnoses />} /> 
+                                <Route path="/diagnoses/create" element={<CreateDiagnose />} /> 
+                                <Route path="/diagnoses/:id" element={<SingleDiagnose />} /> 
+                                <Route path="/diagnoses/:id/edit" element={<EditDiagnose />} /> 
+                                {/* Appointment routes */}
+                                <Route path="/appointments" element={<Appointments />} /> 
+                                <Route path="/appointments/create" element={<CreateAppointment />} /> 
+                                <Route path="/appointments/:id" element={<SingleAppointment />} /> 
+                                <Route path="/appointments/:id/edit" element={<EditAppointment />} /> 
+                            </Route>
                         </Routes>
                     </Container>
                     <Footer /> {/* Add Footer here */}

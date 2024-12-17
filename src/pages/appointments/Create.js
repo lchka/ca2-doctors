@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../utils/useAuth';
 import { Form, Button, Container, Row, Col, Alert } from 'react-bootstrap';
+import axios from 'axios';
 import DoctorDropdown from '../../components/DoctorDropDown';
 import PatientDropdown from '../../components/PatientDropDown';
 import '../../styles/CreateForm.scss';
@@ -34,28 +35,36 @@ const Create = () => {
   const handleDoctorChange = (doctor_id) => {
     setForm({
       ...form,
-      doctor_id,
+      doctor_id: Number(doctor_id),
     });
   };
 
   const handlePatientChange = (patient_id) => {
     setForm({
       ...form,
-      patient_id,
+      patient_id: Number(patient_id),
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Add your API call here to create the appointment
-      // Example:
-      // await axios.post('https://your-api-url.com/appointments', form, {
-      //   headers: { Authorization: `Bearer ${token}` },
-      // });
-      navigate('/appointments');
+      const response = await axios.post('https://fed-medical-clinic-api.vercel.app/appointments', {
+        ...form,
+        patient_id: Number(form.patient_id),
+        doctor_id: Number(form.doctor_id),
+      }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log('Appointment created:', response.data);
+      navigate('/appointments', { state: { success: 'Appointment successfully created!' } });
     } catch (err) {
-      setError('Failed to create appointment. Please try again.');
+      if (err.response && err.response.data && err.response.data.error) {
+        setError(err.response.data.error.issues.map(issue => issue.message).join(', '));
+      } else {
+        setError('Failed to create appointment. Please try again.');
+      }
+      console.error('Error creating appointment:', err.response ? err.response.data : err);
     }
   };
 

@@ -60,10 +60,10 @@ const Footer = () => {
         </Row>
 
         {/* Footer Bottom */}
-        <Row className="mt-4">
+        <Row className="mt-5">
           <Col className="text-center">
             <p style={{ color: "#888", fontSize: "14px" }}>
-              &copy; {new Date().getFullYear()} Medical Place. All rights reserved.
+              &copy; {new Date().getFullYear()} DL Medical Place. All rights reserved.
             </p>
           </Col>
         </Row>

@@ -1,104 +1,125 @@
-import { useState, useEffect } from "react";
-import axios from 'axios';
-import { useNavigate, useParams } from "react-router-dom";
-import { Form, Button, Container, Alert } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../utils/useAuth';
+import { Form, Button, Container, Alert } from 'react-bootstrap';
+import axios from 'axios';
+import DoctorDropdown from '../../components/DoctorDropDown';
+import PatientDropdown from '../../components/PatientDropDown';
+import '../../styles/CreateForm.scss';
 
 const Edit = () => {
-    const [form, setForm] = useState({
-        appointment_date: '',
-        doctor_id: '',
-        patient_id: ''
-    });
-    const [error, setError] = useState(null);
-    const navigate = useNavigate();
-    const { id } = useParams();
-    const { token } = useAuth();
+  const navigate = useNavigate();
+  const { token } = useAuth();
+  const { id } = useParams();
 
-    useEffect(() => {
-        const fetchAppointment = async () => {
-            try {
-                const response = await axios.get(`https://fed-medical-clinic-api.vercel.app/appointments/${id}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-                setForm(response.data);
-            } catch (error) {
-                console.error('Error fetching appointment:', error);
-                setError('Error fetching appointment');
-            }
-        };
+  const [form, setForm] = useState({
+    patient_id: '',
+    appointment_date: '',
+    doctor_id: '',
+  });
 
-        fetchAppointment();
-    }, [id, token]);
+  const [error, setError] = useState(null);
 
-    const handleChange = (e) => {
-        setForm({
-            ...form,
-            [e.target.name]: e.target.value
+  useEffect(() => {
+    const fetchAppointment = async () => {
+      try {
+        console.log(`Fetching appointment with ID: ${id}`);
+        console.log(`Using token: ${token}`);
+        const response = await axios.get(`https://fed-medical-clinic-api.vercel.app/appointments/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         });
+        setForm(response.data);
+      } catch (error) {
+        console.error('Error fetching appointment:', error);
+        setError('Error fetching appointment');
+      }
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            await axios.put(`https://fed-medical-clinic-api.vercel.app/appointments/${id}`, form, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            navigate(`/appointments/${id}`); // Navigate to the appointment details page after successful update
-        } catch (error) {
-            console.error('Error updating appointment:', error);
-            setError('Error updating appointment');
-        }
-    };
+    fetchAppointment();
+  }, [id, token]);
 
-    return (
-        <Container className="mt-4">
-            <h1>Edit Appointment</h1>
-            {error && <Alert variant="danger">{error}</Alert>}
-            <Form onSubmit={handleSubmit}>
-                <Form.Group controlId="formAppointmentDate">
-                    <Form.Label>Appointment Date</Form.Label>
-                    <Form.Control
-                        type="text"
-                        placeholder="Enter appointment date"
-                        name="appointment_date"
-                        value={form.appointment_date}
-                        onChange={handleChange}
-                    />
-                </Form.Group>
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
+  };
 
-                <Form.Group controlId="formDoctorId">
-                    <Form.Label>Doctor ID</Form.Label>
-                    <Form.Control
-                        type="text"
-                        placeholder="Enter doctor ID"
-                        name="doctor_id"
-                        value={form.doctor_id}
-                        onChange={handleChange}
-                    />
-                </Form.Group>
+  const handleDoctorChange = (doctor_id) => {
+    setForm({
+      ...form,
+      doctor_id,
+    });
+  };
 
-                <Form.Group controlId="formPatientId">
-                    <Form.Label>Patient ID</Form.Label>
-                    <Form.Control
-                        type="text"
-                        placeholder="Enter patient ID"
-                        name="patient_id"
-                        value={form.patient_id}
-                        onChange={handleChange}
-                    />
-                </Form.Group>
+  const handlePatientChange = (patient_id) => {
+    setForm({
+      ...form,
+      patient_id,
+    });
+  };
 
-                <Button variant="primary" type="submit" className="mt-3">
-                    Update
-                </Button>
-            </Form>
-        </Container>
-    );
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      console.log(`Updating appointment with ID: ${id}`);
+      console.log(`Form data:`, form);
+      await axios.patch(`https://fed-medical-clinic-api.vercel.app/appointment/${id}`, form, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      navigate('/appointments', { state: { success: 'Appointment successfully updated!' } });
+    } catch (err) {
+      if (err.response && err.response.data && err.response.data.error) {
+        setError(err.response.data.error.issues.map(issue => issue.message).join(', '));
+      } else if (err.response && err.response.data && err.response.data.message) {
+        setError(err.response.data.message);
+      } else {
+        setError('Failed to update appointment. Please try again.');
+      }
+      console.error('Error updating appointment:', err.response ? err.response.data : err);
+    }
+  };
+
+  return (
+    <Container className="create-form-container my-5">
+      <h2 className="text-center mb-4">Edit Appointment</h2>
+      {error && <Alert variant="danger" className="text-center">{error}</Alert>}
+      <Form onSubmit={handleSubmit} className="create-form p-4 rounded shadow">
+        <Form.Group controlId="formPatientId" className="mb-3">
+          <Form.Label>Patient</Form.Label>
+          <PatientDropdown
+            selectedPatientId={form.patient_id}
+            onPatientChange={handlePatientChange}
+          />
+        </Form.Group>
+        <Form.Group controlId="formAppointmentDate" className="mb-3">
+          <Form.Label title="Make sure to replace with the correct date in the format ddmmyy">
+            Appointment Date
+          </Form.Label>
+          <Form.Control
+            type="text"
+            placeholder="Format: ddmmyy"
+            name="appointment_date"
+            value={form.appointment_date}
+            onChange={handleChange}
+            required
+          />
+        </Form.Group>
+        <Form.Group controlId="formDoctorId" className="mb-3">
+          <Form.Label>Doctor</Form.Label>
+          <DoctorDropdown
+            selectedDoctorId={form.doctor_id}
+            onDoctorChange={handleDoctorChange}
+          />
+        </Form.Group>
+        <Button variant="primary" type="submit" className="w-100">
+          Update
+        </Button>
+      </Form>
+    </Container>
+  );
 };
 
 export default Edit;
