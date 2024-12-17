@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useNavigate, useParams } from "react-router-dom";
 import { Form, Button, Container, Alert } from 'react-bootstrap';
 import { useAuth } from '../../utils/useAuth';
+import SpecialisationDropDown from '../../components/SpecialisationDropDown';
+import '../../styles/CreateForm.scss';
 
 const Edit = () => {
     const [form, setForm] = useState({
@@ -17,14 +19,6 @@ const Edit = () => {
     const { id } = useParams();
     const { token } = useAuth();
 
-    const specialisations = [
-        "Podiatrist",
-        "Dermatologist",
-        "Pediatrician",
-        "Psychiatrist",
-        "General Practitioner"
-    ];
-
     useEffect(() => {
         // Fetch the doctor's details to populate the form
         const fetchDoctor = async () => {
@@ -37,6 +31,7 @@ const Edit = () => {
                 setForm(response.data);
             } catch (error) {
                 console.error('Error fetching doctor:', error);
+                setError('Error fetching doctor');
             }
         };
 
@@ -50,6 +45,13 @@ const Edit = () => {
         });
     };
 
+    const handleSpecialisationChange = (specialisation) => {
+        setForm({
+            ...form,
+            specialisation
+        });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -58,18 +60,25 @@ const Edit = () => {
                     Authorization: `Bearer ${token}`
                 }
             });
-            navigate(`/doctor/${id}`, { replace: true });
+            navigate(`/doctor/${id}`, { state: { success: 'Doctor successfully updated!' } });
         } catch (err) {
-            setError('Error updating doctor');
+            console.error('Error updating doctor:', err);
+            if (err.response && err.response.data && err.response.data.error) {
+                setError(err.response.data.error.issues.map(issue => issue.message).join(', '));
+            } else if (err.response && err.response.data && err.response.data.message) {
+                setError(err.response.data.message);
+            } else {
+                setError('Error updating doctor');
+            }
         }
     };
 
     return (
-        <Container className="mt-4">
+        <Container className="my-5">
             <h1>Edit Doctor</h1>
             {error && <Alert variant="danger">{error}</Alert>}
-            <Form onSubmit={handleSubmit}>
-                <Form.Group controlId="formFirstName">
+            <Form onSubmit={handleSubmit} className="create-form p-4 rounded shadow">
+                <Form.Group controlId="formFirstName" className="mb-3">
                     <Form.Label>First Name</Form.Label>
                     <Form.Control
                         type="text"
@@ -80,7 +89,7 @@ const Edit = () => {
                     />
                 </Form.Group>
 
-                <Form.Group controlId="formLastName">
+                <Form.Group controlId="formLastName" className="mb-3">
                     <Form.Label>Last Name</Form.Label>
                     <Form.Control
                         type="text"
@@ -91,7 +100,7 @@ const Edit = () => {
                     />
                 </Form.Group>
 
-                <Form.Group controlId="formEmail">
+                <Form.Group controlId="formEmail" className="mb-3">
                     <Form.Label>Email</Form.Label>
                     <Form.Control
                         type="email"
@@ -102,7 +111,7 @@ const Edit = () => {
                     />
                 </Form.Group>
 
-                <Form.Group controlId="formPhone">
+                <Form.Group controlId="formPhone" className="mb-3">
                     <Form.Label>Phone</Form.Label>
                     <Form.Control
                         type="text"
@@ -113,24 +122,15 @@ const Edit = () => {
                     />
                 </Form.Group>
 
-                <Form.Group controlId="formSpecialisation">
+                <Form.Group controlId="formSpecialisation" className="mb-3">
                     <Form.Label>Specialisation</Form.Label>
-                    <Form.Control
-                        as="select"
-                        name="specialisation"
-                        value={form.specialisation}
-                        onChange={handleChange}
-                    >
-                        <option value="">Select specialisation</option>
-                        {specialisations.map((specialisation) => (
-                            <option key={specialisation} value={specialisation}>
-                                {specialisation}
-                            </option>
-                        ))}
-                    </Form.Control>
+                    <SpecialisationDropDown
+                        selectedSpecialisation={form.specialisation}
+                        onSpecialisationChange={handleSpecialisationChange}
+                    />
                 </Form.Group>
 
-                <Button variant="primary" type="submit" className="mt-3">
+                <Button variant="primary" type="submit" className="w-100">
                     Update
                 </Button>
             </Form>

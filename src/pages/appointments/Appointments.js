@@ -83,7 +83,7 @@ const Appointments = () => {
                 <Alert variant="info" className="text-center">{location.state.success}</Alert>
             )}
             <h1>Hey {user?.first_name ? user.first_name : ''}! These are all appointments</h1>
-            <Button variant="primary" className="btn-view-details rounded-3 mb-4" onClick={() => navigate('/appointments/create')}>
+            <Button variant="primary" className="btn-view-details text-uppercase fw-semibold rounded-3 mb-4" onClick={() => navigate('/appointments/create')}>
                 Create Appointment
             </Button>
             <Row>
@@ -95,7 +95,7 @@ const Appointments = () => {
                                 <Card.Text>Appointment Date: {appointment.appointment_date}</Card.Text>
                                 <Card.Text>Doctor: {getDoctorName(appointment.doctor_id)}</Card.Text>
                                 <Card.Text>Patient: {getPatientName(appointment.patient_id)}</Card.Text>
-                                <Button variant="primary" className="btn-view-details rounded-3" onClick={() => navigate(`/appointments/${appointment.id}`)}>View Details</Button>
+                                <Button variant="primary" className="btn-view-details text-uppercase fw-semibold rounded-3" onClick={() => navigate(`/appointments/${appointment.id}`)}>View Details</Button>
                             </Card.Body>
                         </Card>
                     </Col>

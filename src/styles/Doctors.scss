@@ -1,0 +1,101 @@
+
+.suggestions-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    max-height: 150px;
+    overflow-y: auto;
+    position: absolute;
+    background-color: white;
+    z-index: 1000;
+    width: 100%;
+  }
+  
+  .suggestions-list li {
+    padding: 10px;
+    cursor: pointer;
+  }
+  
+  .suggestions-list li:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .doctor-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    &:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 8px rgba(0, 0, 255, 0.2);
+      border-color: #499bff;
+    }
+  }
+  
+  .btn-view-details {
+    background-color: rgb(80, 144, 255); // Updated button background color
+    border-color: rgb(80, 144, 255); // Updated button border color
+    border-radius: 5px; // Rounded corners
+    &:hover {
+      background-color: #0056b3; // Darker blue on hover
+      border-color: #0056b3; // Darker blue border on hover
+    }
+  }
+  
+  @keyframes slideInLeft {
+    from {
+      transform: translateX(-10%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideInRight {
+    from {
+      transform: translateX(10%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  .animate-left {
+    animation: slideInLeft 0.4s ease-out;
+  }
+  
+  .animate-right {
+    animation: slideInRight 0.4s ease-out;
+  }
+
+  .single-doctor-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    &:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 8px rgba(0, 0, 255, 0.2);
+      border-color: #499bff;
+    }
+  }
+  
+  .btn-view-details {
+    background-color: rgb(80, 144, 255); // Updated button background color
+    border-color: rgb(80, 144, 255); // Updated button border color
+    border-radius: 5px; // Rounded corners
+    &:hover {
+      background-color: #0056b3; // Darker blue on hover
+      border-color: #0056b3; // Darker blue border on hover
+    }
+  }
+  
+  .btn-delete {
+    background-color: rgb(255, 80, 80); // Red background color
+    border-color: rgb(255, 80, 80); // Red border color
+    border-radius: 5px; // Rounded corners
+    &:hover {
+      background-color: #b30000; // Darker red on hover
+      border-color: #b30000; // Darker red border on hover
+    }
+  }
