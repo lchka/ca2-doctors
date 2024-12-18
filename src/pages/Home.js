@@ -18,7 +18,7 @@ const Home = () => {
   const [animate, setAnimate] = useState(false);
   const [buttonAnimate, setButtonAnimate] = useState(false); // State for button animation
   const [videoInView, setVideoInView] = useState(false); // State for video animation trigger
-  const [ setDoctors] = useState([]); // State for doctors data
+  const [ doctors,setDoctors] = useState([]); // State for doctors data
   const [filteredDoctors, setFilteredDoctors] = useState([]); // State for filtered doctors (first 3)
   const [doctorsInView, setDoctorsInView] = useState(false); // State for doctors section animation trigger
 
@@ -64,28 +64,39 @@ const Home = () => {
     // Fetch Weather
     const fetchWeather = async () => {
       if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(async (position) => {
-          const { latitude, longitude } = position.coords;
-
-          try {
-            const locationRes = await axios.get(
-              `/api/locations/v1/cities/geoposition/search?apikey=fA4J5PY0eG8wfWZ7F78nMonjjZVY1UaA&q=${latitude},${longitude}`
-            );
-            const locationKey = locationRes.data.Key;
-
-            const weatherRes = await axios.get(
-              `/api/currentconditions/v1/${locationKey}?apikey=fA4J5PY0eG8wfWZ7F78nMonjjZVY1UaA`
-            );
-            setWeather(weatherRes.data[0]);
-            setLoading(false);
-          } catch (error) {
-            console.error("Error fetching weather data:", error);
-            setError("Error fetching weather data");
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+    
+            try {
+              const locationRes = await axios.get(
+                `https://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=fA4J5PY0eG8wfWZ7F78nMonjjZVY1UaA&q=${latitude},${longitude}`
+              );
+              const locationKey = locationRes.data.Key;
+    
+              const weatherRes = await axios.get(
+                `https://dataservice.accuweather.com/currentconditions/v1/${locationKey}?apikey=fA4J5PY0eG8wfWZ7F78nMonjjZVY1UaA`
+              );
+              const weatherData = weatherRes.data[0];
+              console.log("Weather Data:", weatherData); // Log the weather data
+              setWeather(weatherData);
+              setLoading(false);
+            } catch (error) {
+              console.error("Error fetching weather data:", error);
+              setError("Error fetching weather data");
+            }
+          },
+          (error) => {
+            console.error("Geolocation error:", error);
+            setError("Geolocation error");
           }
-        });
+        );
+      } else {
+        console.error("Geolocation is not supported by this browser.");
+        setError("Geolocation is not supported by this browser.");
       }
     };
-
+    
     fetchWeather();
 
     // Fetch Doctors
@@ -133,32 +144,32 @@ const Home = () => {
           <div className="weather-box p-3 rounded-5 border">
             {loading && <Spinner animation="border" />}
             {error && <Alert variant="danger">{error}</Alert>}
-            {weather && (
-              <div className="weather-info d-flex align-items-center">
-                {/* Weather Icon on the left side */}
-                <div className="weather-icon me-3">
-                  {weather.WeatherText.toLowerCase().includes("sunny") && (
-                    <WiDaySunny size={40} />
-                  )}
-                  {weather.WeatherText.toLowerCase().includes("cloudy") && (
-                    <WiCloudy size={40} />
-                  )}
-                  {weather.WeatherText.toLowerCase().includes("rain") && (
-                    <WiRain size={40} />
-                  )}
-                </div>
-                {/* Weather Text and Temperature */}
-                <div>
-                  <h5 className="mb-2">{weather.WeatherText}</h5>
-                  <p className="temperature mb-2">
-                    <strong>
-                      {weather.Temperature.Metric.Value}°{" "}
-                      {weather.Temperature.Metric.Unit}
-                    </strong>
-                  </p>
-                </div>
-              </div>
-            )}
+            {weather && weather.Temperature && weather.WeatherText && (
+  <div className="weather-info d-flex align-items-center">
+    {/* Weather Icon on the left side */}
+    <div className="weather-icon me-3">
+      {/(sunny)/i.test(weather.WeatherText) && (
+        <WiDaySunny size={40} />
+      )}
+      {/(cloudy)/i.test(weather.WeatherText) && (
+        <WiCloudy size={40} />
+      )}
+      {/(rain)/i.test(weather.WeatherText) && (
+        <WiRain size={40} />
+      )}
+    </div>
+    {/* Weather Text and Temperature */}
+    <div>
+      <h5 className="mb-2">{weather.WeatherText}</h5>
+      <p className="temperature mb-2">
+        <strong>
+          {weather.Temperature.Metric.Value}°{" "}
+          {weather.Temperature.Metric.Unit}
+        </strong>
+      </p>
+    </div>
+  </div>
+)}
           </div>
         </Col>
       </Row>
