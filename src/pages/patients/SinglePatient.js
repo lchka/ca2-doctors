@@ -162,7 +162,7 @@ const SinglePatient = () => {
           }
         }
       );
-      const prescriptions = prescriptionsResponse.data;
+      const prescriptions = prescriptionsResponse.data.filter(prescription => prescription.patient_id === parseInt(id));
       for (const prescription of prescriptions) {
         await axios.delete(
           `https://fed-medical-clinic-api.vercel.app/prescriptions/${prescription.id}`,
@@ -183,7 +183,7 @@ const SinglePatient = () => {
           }
         }
       );
-      const appointments = appointmentsResponse.data;
+      const appointments = appointmentsResponse.data.filter(appointment => appointment.patient_id === parseInt(id));
       for (const appointment of appointments) {
         await axios.delete(
           `https://fed-medical-clinic-api.vercel.app/appointments/${appointment.id}`,
@@ -204,7 +204,7 @@ const SinglePatient = () => {
           }
         }
       );
-      const diagnoses = diagnosesResponse.data;
+      const diagnoses = diagnosesResponse.data.filter(diagnosis => diagnosis.patient_id === parseInt(id));
       for (const diagnosis of diagnoses) {
         await axios.delete(
           `https://fed-medical-clinic-api.vercel.app/diagnoses/${diagnosis.id}`,
@@ -228,7 +228,6 @@ const SinglePatient = () => {
       setError(error.response?.data?.message || 'Error deleting patient or associated data');
     }
   };
-
   if (!patient) {
     return "Loading...";
   }

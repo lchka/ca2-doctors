@@ -8,7 +8,7 @@ import { MdArrowDownward } from "react-icons/md"; // A different arrow component
 import "../styles/Button.scss";
 import { WiDaySunny, WiCloudy, WiRain } from "react-icons/wi"; // Weather icons from react-icons
 import Video from "../images/videoDna.mp4"; // Import the video file
-import Logo from "../images/navlogono.png"
+import Logo from "../images/navlogono.png";
 import doctorImage from "../images/doctor.jpg"; // Importing the image
 
 const Home = () => {
@@ -62,6 +62,8 @@ const Home = () => {
     }
 
     // Fetch Weather
+    // filepath: /c:/Users/laura/OneDrive - Dun Laoghaire Institute of Art, Design and Technology/year 3/Front-End D/ca2-doctors/src/pages/Home.js
+    // filepath: /c:/Users/laura/OneDrive - Dun Laoghaire Institute of Art, Design and Technology/year 3/Front-End D/ca2-doctors/src/pages/Home.js
     const fetchWeather = async () => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(async (position) => {
@@ -69,12 +71,12 @@ const Home = () => {
 
           try {
             const locationRes = await axios.get(
-              `https://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=8uh1KbPUUjS5ol77mdqnNb8gH1Hicy9H&q=${latitude},${longitude}`
+              `/api/locations/v1/cities/geoposition/search?apikey=fA4J5PY0eG8wfWZ7F78nMonjjZVY1UaA&q=${latitude},${longitude}`
             );
             const locationKey = locationRes.data.Key;
 
             const weatherRes = await axios.get(
-              `https://dataservice.accuweather.com/currentconditions/v1/${locationKey}?apikey=8uh1KbPUUjS5ol77mdqnNb8gH1Hicy9H`
+              `/api/currentconditions/v1/${locationKey}?apikey=fA4J5PY0eG8wfWZ7F78nMonjjZVY1UaA`
             );
             setWeather(weatherRes.data[0]);
             setLoading(false);
@@ -307,10 +309,10 @@ const Home = () => {
       </div>
 
       <Row>
-  <Col className="d-flex justify-content-center mb-5 align-items-center">
-    <img src={Logo} alt="Logo" style={{ maxHeight: '100px' }} />
-  </Col>
-</Row>
+        <Col className="d-flex justify-content-center mb-5 align-items-center">
+          <img src={Logo} alt="Logo" style={{ maxHeight: "100px" }} />
+        </Col>
+      </Row>
     </Container>
   );
 };

@@ -1,18 +1,18 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useParams, useNavigate } from "react-router-dom";
-import { Card, Container, Alert, Button } from 'react-bootstrap';
-import { useAuth } from "../../utils/useAuth";
+import { useParams, useNavigate } from 'react-router-dom';
+import { Container, Card, Button, Alert } from 'react-bootstrap';
+import { useAuth } from '../../utils/useAuth';
 import '../../styles/Appointments.scss';
 
 const SingleAppointment = () => {
     const { token } = useAuth();
+    const { id } = useParams();
+    const navigate = useNavigate();
     const [appointment, setAppointment] = useState(null);
     const [patient, setPatient] = useState(null);
     const [doctor, setDoctor] = useState(null);
     const [error, setError] = useState(null);
-    const { id } = useParams();
-    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchAppointment = async () => {
@@ -23,39 +23,23 @@ const SingleAppointment = () => {
                     }
                 });
                 setAppointment(response.data);
-                fetchPatient(response.data.patient_id);
-                fetchDoctor(response.data.doctor_id);
-            } catch (error) {
-                console.error('Error fetching appointment:', error);
-                setError('Error fetching appointment');
-            }
-        };
 
-        const fetchPatient = async (patientId) => {
-            try {
-                const response = await axios.get(`https://fed-medical-clinic-api.vercel.app/patients/${patientId}`, {
+                const patientResponse = await axios.get(`https://fed-medical-clinic-api.vercel.app/patients/${response.data.patient_id}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
                 });
-                setPatient(response.data);
-            } catch (error) {
-                console.error('Error fetching patient:', error);
-                setError('Error fetching patient');
-            }
-        };
+                setPatient(patientResponse.data);
 
-        const fetchDoctor = async (doctorId) => {
-            try {
-                const response = await axios.get(`https://fed-medical-clinic-api.vercel.app/doctors/${doctorId}`, {
+                const doctorResponse = await axios.get(`https://fed-medical-clinic-api.vercel.app/doctors/${response.data.doctor_id}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
                 });
-                setDoctor(response.data);
+                setDoctor(doctorResponse.data);
             } catch (error) {
-                console.error('Error fetching doctor:', error);
-                setError('Error fetching doctor');
+                console.error('Error fetching appointment data:', error);
+                setError('Error fetching appointment data');
             }
         };
 
@@ -76,6 +60,17 @@ const SingleAppointment = () => {
         }
     };
 
+    const formatDate = (dateString) => {
+        if (typeof dateString !== 'string') {
+            dateString = dateString.toString();
+        }
+        const day = dateString.slice(0, 2);
+        const month = dateString.slice(2, 4) - 1; // Months are zero-indexed in JavaScript
+        const year = '20' + dateString.slice(4, 6); // Assuming the year is in the 2000s
+        const date = new Date(year, month, day);
+        return date.toLocaleDateString();
+    };
+
     if (!appointment || !patient || !doctor) {
         return 'Loading...';
     }
@@ -87,7 +82,7 @@ const SingleAppointment = () => {
             <Card className="mb-3 single-appointment-card">
                 <Card.Body>
                     <Card.Title className="fw-bold">Appointment Details</Card.Title>
-                    <Card.Text>Appointment Date: {appointment.appointment_date}</Card.Text>
+                    <Card.Text>Appointment Date: {formatDate(appointment.appointment_date)}</Card.Text>
                     <Card.Text>Doctor: {doctor.first_name} {doctor.last_name}</Card.Text>
                     <Card.Text>Patient: {patient.first_name} {patient.last_name}</Card.Text>
                     <Button variant="primary" className="btn-view-details text-uppercase fw-semibold rounded-3 me-2" onClick={() => navigate(`/appointments/${id}/edit`)}>Edit Appointment</Button>
