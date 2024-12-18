@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Container, Row, Col, Alert, Spinner, Card } from "react-bootstrap";
 import { useLocation, useNavigate, Link } from "react-router-dom";
-import { AiOutlineRight, AiOutlineDown } from "react-icons/ai"; // Import downward arrow
+import { AiOutlineRight} from "react-icons/ai"; // Import downward arrow
 import "../styles/Home.scss";
 import { MdArrowDownward } from "react-icons/md"; // A different arrow component
 import "../styles/Button.scss";
@@ -18,7 +18,7 @@ const Home = () => {
   const [animate, setAnimate] = useState(false);
   const [buttonAnimate, setButtonAnimate] = useState(false); // State for button animation
   const [videoInView, setVideoInView] = useState(false); // State for video animation trigger
-  const [doctors, setDoctors] = useState([]); // State for doctors data
+  const [ setDoctors] = useState([]); // State for doctors data
   const [filteredDoctors, setFilteredDoctors] = useState([]); // State for filtered doctors (first 3)
   const [doctorsInView, setDoctorsInView] = useState(false); // State for doctors section animation trigger
 
@@ -62,8 +62,6 @@ const Home = () => {
     }
 
     // Fetch Weather
-    // filepath: /c:/Users/laura/OneDrive - Dun Laoghaire Institute of Art, Design and Technology/year 3/Front-End D/ca2-doctors/src/pages/Home.js
-    // filepath: /c:/Users/laura/OneDrive - Dun Laoghaire Institute of Art, Design and Technology/year 3/Front-End D/ca2-doctors/src/pages/Home.js
     const fetchWeather = async () => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(async (position) => {

@@ -6,38 +6,40 @@ import { useAuth } from "../../utils/useAuth";
 import '../../styles/Doctors.scss';
 
 const SingleDoctor = () => {
-    const { token } = useAuth();
-    const [doctor, setDoctor] = useState(null);
-    const [error, setError] = useState(null);
-    const { id } = useParams();
-    const navigate = useNavigate();
-    const location = useLocation();
+    const { token } = useAuth(); // Get token for authentication
+    const [doctor, setDoctor] = useState(null); // State to store doctor data
+    const [error, setError] = useState(null); // State to store error messages
+    const { id } = useParams(); // Get doctor ID from URL parameters
+    const navigate = useNavigate(); // Hook for navigation
+    const location = useLocation(); // Hook to access location state for success messages
 
-    const successMessage = location.state?.success || null;
+    const successMessage = location.state?.success || null; // Get success message from location state
 
+    // Fetch doctor details on component mount
     useEffect(() => {
         axios.get(`https://fed-medical-clinic-api.vercel.app/doctors/${id}`, {
             headers: {
-                Authorization: `Bearer ${token}`
+                Authorization: `Bearer ${token}` // Pass token for authentication
             }
         })
             .then((res) => {
-                setDoctor(res.data);
+                setDoctor(res.data); // Set doctor data on successful fetch
             })
             .catch((err) => {
                 console.error('Error fetching doctor:', err);
-                setError('Error fetching doctor');
+                setError('Error fetching doctor'); // Set error state if fetching fails
             });
-    }, [id, token]);
+    }, [id, token]); // Re-fetch doctor details if ID or token changes
 
+   // Handle delete action for doctor and associated data
    const handleDelete = async () => {
     try {
-        // Fetch and delete all associated appointments
+        // Fetch and delete associated appointments
         const appointmentsResponse = await axios.get(
             `https://fed-medical-clinic-api.vercel.app/appointments?doctor_id=${id}`,
             {
                 headers: {
-                    Authorization: `Bearer ${token}`
+                    Authorization: `Bearer ${token}` // Authorization header for appointments
                 }
             }
         );
@@ -47,18 +49,18 @@ const SingleDoctor = () => {
                 `https://fed-medical-clinic-api.vercel.app/appointments/${appointment.id}`,
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+                        Authorization: `Bearer ${token}` // Authorization header for deleting appointments
                     }
                 }
             );
         }
 
-        // Fetch and delete all associated prescriptions
+        // Fetch and delete associated prescriptions
         const prescriptionsResponse = await axios.get(
             `https://fed-medical-clinic-api.vercel.app/prescriptions?doctor_id=${id}`,
             {
                 headers: {
-                    Authorization: `Bearer ${token}`
+                    Authorization: `Bearer ${token}` // Authorization header for prescriptions
                 }
             }
         );
@@ -68,18 +70,18 @@ const SingleDoctor = () => {
                 `https://fed-medical-clinic-api.vercel.app/prescriptions/${prescription.id}`,
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+                        Authorization: `Bearer ${token}` // Authorization header for deleting prescriptions
                     }
                 }
             );
         }
 
-        // Fetch and delete all associated diagnoses
+        // Fetch and delete associated diagnoses
         const diagnosesResponse = await axios.get(
             `https://fed-medical-clinic-api.vercel.app/diagnoses?doctor_id=${id}`,
             {
                 headers: {
-                    Authorization: `Bearer ${token}`
+                    Authorization: `Bearer ${token}` // Authorization header for diagnoses
                 }
             }
         );
@@ -89,25 +91,26 @@ const SingleDoctor = () => {
                 `https://fed-medical-clinic-api.vercel.app/diagnoses/${diagnosis.id}`,
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+                        Authorization: `Bearer ${token}` // Authorization header for deleting diagnoses
                     }
                 }
             );
         }
 
-        // Delete the doctor
+        // Finally, delete the doctor
         await axios.delete(`https://fed-medical-clinic-api.vercel.app/doctors/${id}`, {
             headers: {
-                Authorization: `Bearer ${token}`
+                Authorization: `Bearer ${token}` // Authorization header for deleting doctor
             }
         });
-        navigate('/doctors', { state: { success: 'Doctor and all associated data successfully deleted!' } });
+        navigate('/doctors', { state: { success: 'Doctor and all associated data successfully deleted!' } }); // Redirect to doctors list with success message
     } catch (error) {
         console.error('Error deleting doctor or associated data:', error);
-        setError(error.response?.data?.message || 'Error deleting doctor or associated data');
+        setError(error.response?.data?.message || 'Error deleting doctor or associated data'); // Display error if deletion fails
     }
 };
 
+    // If doctor data is not yet loaded, show a loading message
     if (!doctor) {
         return 'Loading...';
     }
@@ -115,8 +118,8 @@ const SingleDoctor = () => {
     return (
         <Container className="my-5">
             <h2 className="my-3">Doctor Details</h2>
-            {successMessage && <Alert variant="info">{successMessage}</Alert>}
-            {error && <Alert variant="danger">{error}</Alert>}
+            {successMessage && <Alert variant="info">{successMessage}</Alert>} {/* Display success message if exists */}
+            {error && <Alert variant="danger">{error}</Alert>} {/* Display error message if exists */}
             <Card className="mb-3 single-doctor-card">
                 <Card.Body>
                     <Card.Title className="fw-bold">Doctor Details</Card.Title>
@@ -125,6 +128,7 @@ const SingleDoctor = () => {
                     <Card.Text>Email: {doctor.email}</Card.Text>
                     <Card.Text>Phone: {doctor.phone}</Card.Text>
                     <Card.Text>Specialisation: {doctor.specialisation}</Card.Text>
+                    {/* Buttons to edit or delete the doctor */}
                     <Button variant="primary" className="btn-view-details text-uppercase fw-semibold rounded-3 me-2" onClick={() => navigate(`/doctors/${id}/edit`)}>Edit Doctor</Button>
                     <Button className="btn-delete text-uppercase fw-semibold rounded-3" onClick={handleDelete}>Delete Doctor</Button>
                 </Card.Body>

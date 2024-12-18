@@ -1,41 +1,46 @@
-import { useState, useEffect } from "react";
-import axios from 'axios';
-import { useNavigate, useLocation } from "react-router-dom";
-import { Form, Button, Container, Alert } from 'react-bootstrap';
-import { useAuth } from '../../utils/useAuth';
+import { useState, useEffect } from "react"; // Import React hooks
+import axios from 'axios'; // Import axios for HTTP requests
+import { useNavigate, useLocation } from "react-router-dom"; // Import hooks for navigation and location
+import { Form, Button, Container, Alert } from 'react-bootstrap'; // Import Bootstrap components
+import { useAuth } from '../../utils/useAuth'; // Import custom authentication hook
 import "../../styles/CreateForm.scss"; // Import the SCSS file for consistent form styling
 
+// Component: CreateDiagnosis
+// Purpose: Allows creation of a new diagnosis for a patient
 const CreateDiagnosis = () => {
-    const { token } = useAuth();
+    const { token } = useAuth(); // Get authentication token
     const [form, setForm] = useState({
-        patient_id: '',
-        condition: '',
-        diagnosis_date: '',
+        patient_id: '', // Store patient ID
+        condition: '', // Store the condition for diagnosis
+        diagnosis_date: '', // Store the diagnosis date
     });
-    const [error, setError] = useState(null);
-    const navigate = useNavigate();
+    const [error, setError] = useState(null); // State for error messages
+    const navigate = useNavigate(); // Navigation hook
     
-    // Extract patient_id from the query string
+    // Extract patient_id from the query string in the URL
     const { search } = useLocation();
     const queryParams = new URLSearchParams(search);
-    const patientId = queryParams.get('patient_id');
+    const patientId = queryParams.get('patient_id'); // Get patient_id from query params
 
+    // If patient_id exists in query params, set it in the form
     useEffect(() => {
         if (patientId) {
             setForm((prevForm) => ({
                 ...prevForm,
-                patient_id: patientId,
+                patient_id: patientId, // Set patient ID from query string
             }));
         }
     }, [patientId]);
 
+    // Handle form field changes
     const handleChange = (e) => {
         setForm({
             ...form,
-            [e.target.name]: e.target.value
+            [e.target.name]: e.target.value, // Update the specific form field
         });
     };
 
+    // Validate form input data
     const validateForm = () => {
         // Validate Patient ID (Ensure it's an integer)
         if (!form.patient_id || isNaN(form.patient_id)) {
@@ -73,20 +78,21 @@ const CreateDiagnosis = () => {
         return null; // All validations passed
     };
 
+    // Handle form submission
     const handleSubmit = async (e) => {
-        e.preventDefault();
+        e.preventDefault(); // Prevent default form submission behavior
 
         // Validate the form data
         const validationError = validateForm();
         if (validationError) {
-            setError(validationError);
+            setError(validationError); // Show validation error if any
             return;
         }
 
         // Convert patient_id to integer before submitting
         const updatedForm = {
             ...form,
-            patient_id: parseInt(form.patient_id, 10),  // Convert patient_id to integer
+            patient_id: parseInt(form.patient_id, 10), // Ensure patient_id is an integer
         };
 
         // Format the diagnosis date as YYYY-MM-DD (ISO format)
@@ -96,14 +102,15 @@ const CreateDiagnosis = () => {
         updatedForm.diagnosis_date = formattedDate;
 
         try {
+            // Send a POST request to add the diagnosis
             await axios.post('https://fed-medical-clinic-api.vercel.app/diagnoses', updatedForm, {
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`, // Include the auth token
+                    'Content-Type': 'application/json', // Set content type to JSON
                 }
             });
 
-            // Handle successful response
+            // Navigate to the patient's page on success with a success message
             navigate(`/patient/${updatedForm.patient_id}`, { state: { success: 'Diagnosis added successfully.' } });
         } catch (err) {
             // Handle error response and display detailed error message
@@ -120,7 +127,7 @@ const CreateDiagnosis = () => {
         <Container className="create-form-container my-5">
             <h1>Add Diagnosis</h1>
 
-            {/* Error Message */}
+            {/* Display error message if any */}
             {error && <Alert variant="danger">{error}</Alert>}
 
             <Form onSubmit={handleSubmit} className="create-form p-4 rounded shadow">
@@ -130,7 +137,7 @@ const CreateDiagnosis = () => {
                         type="text"
                         name="patient_id"
                         value={form.patient_id}
-                        readOnly
+                        readOnly // Patient ID is read-only as it's pre-populated
                     />
                 </Form.Group>
 
@@ -141,8 +148,8 @@ const CreateDiagnosis = () => {
                         placeholder="Enter condition"
                         name="condition"
                         value={form.condition}
-                        onChange={handleChange}
-                        required
+                        onChange={handleChange} // Update condition on change
+                        required // Make condition a required field
                     />
                 </Form.Group>
 
@@ -153,8 +160,8 @@ const CreateDiagnosis = () => {
                         placeholder="Enter diagnosis date (DDMMYY)"
                         name="diagnosis_date"
                         value={form.diagnosis_date}
-                        onChange={handleChange}
-                        required
+                        onChange={handleChange} // Update diagnosis date on change
+                        required // Make diagnosis date a required field
                     />
                 </Form.Group>
 
@@ -166,4 +173,4 @@ const CreateDiagnosis = () => {
     );
 };
 
-export default CreateDiagnosis;
+export default CreateDiagnosis; // Export the component

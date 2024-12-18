@@ -8,49 +8,51 @@ import "../styles/Home.scss";
 
 import logoImage from "../images/navlogono.png";
 
+// Navbar component
 const CustomNavbar = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { logout, token } = useAuth();
+  const location = useLocation(); // React Router hook to get the current path
+  const navigate = useNavigate(); // React Router hook to navigate programmatically
+  const { logout, token } = useAuth(); // Custom hook for authentication logic
 
+  // State for the active link, search query, and animations
   const [activeLink, setActiveLink] = useState(location.pathname);
   const [searchQuery, setSearchQuery] = useState("");
-  const [logoAnimation, setLogoAnimation] = useState(false); // Logo animation state
-  const [linksAnimation, setLinksAnimation] = useState(false); // Links fade-in animation state
+  const [logoAnimation, setLogoAnimation] = useState(false); // Animation for the logo
+  const [linksAnimation, setLinksAnimation] = useState(false); // Animation for navbar links
 
+  // Trigger animations when the navbar mounts
   useEffect(() => {
-    // Trigger both animations when the navbar mounts
-    setLogoAnimation(true);
-    setTimeout(() => setLinksAnimation(true), 200); // Delay the link animations slightly
+    setLogoAnimation(true); // Start the logo animation
+    setTimeout(() => setLinksAnimation(true), 200); // Add a slight delay for the link animation
   }, []);
 
+  // Handle the search functionality
   const handleSearch = (e) => {
     e.preventDefault();
 
     if (searchQuery.trim() !== "") {
-      // Redirect to a search results page or make an API call here
+      // Redirect to a search results page with the query parameter
       console.log("Searching for:", searchQuery);
       navigate(`/search?query=${encodeURIComponent(searchQuery)}`);
     }
   };
 
   return (
-    <BootstrapNavbar
-      expand="lg"
-      className="navbar-dark gradient-custom sticky-top"
-    >
+    <BootstrapNavbar expand="lg" className="navbar-dark gradient-custom sticky-top">
       <Container fluid>
         {/* Navbar Brand (Logo) */}
         <BootstrapNavbar.Brand as={Link} to="/" className={logoAnimation ? "logo-slide-in" : ""}>
           <img src={logoImage} alt="DL Medical Logo" className="d-inline-block align-top" height="60" />
         </BootstrapNavbar.Brand>
 
-        {/* Navbar Toggler */}
+        {/* Navbar Toggler for collapsing */}
         <BootstrapNavbar.Toggle aria-controls="navbarSupportedContent" />
 
+        {/* Navbar Collapse (contains links and actions) */}
         <BootstrapNavbar.Collapse id="navbarSupportedContent">
           {/* Left Links */}
           <Nav className="d-flex flex-row mt-3 mt-lg-0">
+            {/* Home link */}
             <Nav.Item className={`text-center animate-button mx-2 mx-lg-1 ${linksAnimation ? "link-fade-in" : ""}`}>
               <Nav.Link
                 as={Link}
@@ -59,11 +61,13 @@ const CustomNavbar = () => {
                 onClick={() => setActiveLink("/")}
               >
                 <div>
-                  <FaHome size={20} className="icon" />
+                  <FaHome size={20} className="icon" /> {/* Home icon */}
                 </div>
                 Home
               </Nav.Link>
             </Nav.Item>
+
+            {/* Doctors link */}
             <Nav.Item className={`text-center animate-button mx-2 mx-lg-1 ${linksAnimation ? "link-fade-in" : ""}`}>
               <Nav.Link
                 as={Link}
@@ -72,11 +76,13 @@ const CustomNavbar = () => {
                 onClick={() => setActiveLink("/doctors")}
               >
                 <div>
-                  <FaUserMd size={20} className="icon" />
+                  <FaUserMd size={20} className="icon" /> {/* Doctors icon */}
                 </div>
                 Our Doctors
               </Nav.Link>
             </Nav.Item>
+
+            {/* Patients link */}
             <Nav.Item className={`text-center animate-button mx-2 mx-lg-1 ${linksAnimation ? "link-fade-in" : ""}`}>
               <Nav.Link
                 as={Link}
@@ -85,11 +91,13 @@ const CustomNavbar = () => {
                 onClick={() => setActiveLink("/patients")}
               >
                 <div>
-                  <FaUser size={20} className="icon" />
+                  <FaUser size={20} className="icon" /> {/* Patients icon */}
                 </div>
                 Our Patients
               </Nav.Link>
             </Nav.Item>
+
+            {/* Appointments link */}
             <Nav.Item className={`text-center animate-button mx-2 mx-lg-1 ${linksAnimation ? "link-fade-in" : ""}`}>
               <Nav.Link
                 as={Link}
@@ -98,7 +106,7 @@ const CustomNavbar = () => {
                 onClick={() => setActiveLink("/appointments")}
               >
                 <div>
-                  <FaCalendarAlt size={20} className="icon" />
+                  <FaCalendarAlt size={20} className="icon" /> {/* Appointments icon */}
                 </div>
                 Appointments
               </Nav.Link>
@@ -116,23 +124,23 @@ const CustomNavbar = () => {
                   aria-label="Search"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="search-box" // Add class for custom styling
+                  className="search-box" // Custom style for the search input
                 />
                 <Button variant="outline-white" type="submit" className="search-button">
-                  <FaSearch size={18} />
+                  <FaSearch size={18} /> {/* Search icon */}
                 </Button>
               </Form>
             </Nav.Item>
 
-            {/* Logout or Login/Register Links */}
+            {/* Logout or Login/Register based on token */}
             {token ? (
               <Nav.Item className="text-center mx-2 mx-lg-1">
                 <Button
                   variant="outline-danger"
                   className="fs-6"
                   onClick={() => {
-                    logout();
-                    navigate("/login");
+                    logout(); // Call logout function
+                    navigate("/login"); // Redirect to login page
                   }}
                 >
                   Logout

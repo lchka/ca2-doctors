@@ -4,12 +4,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Container, Form, Button, Alert } from "react-bootstrap";
 import { useAuth } from "../../utils/useAuth";
 import DoctorDropDown from "../../components/DoctorDropDown";
-import "../../styles/CreateForm.scss"; // Import the SCSS file for consistent form styling
+import "../../styles/CreateForm.scss"; // Import SCSS for form styling
 
 const EditPrescription = () => {
-  const { token } = useAuth();
-  const { id } = useParams();
-  const navigate = useNavigate();
+  const { token } = useAuth(); // Retrieve token from auth context for authorization
+  const { id } = useParams(); // Get prescription ID from URL parameters
+  const navigate = useNavigate(); // Hook for navigating to other pages
   const [form, setForm] = useState({
     patient_id: "",
     doctor_id: "",
@@ -17,10 +17,11 @@ const EditPrescription = () => {
     dosage: "",
     start_date: "",
     end_date: "",
-  });
-  const [error, setError] = useState(null);
+  }); // State to manage form fields
+  const [error, setError] = useState(null); // State to handle error messages
 
   useEffect(() => {
+    // Fetch existing prescription data for editing
     const fetchPrescription = async () => {
       try {
         const response = await axios.get(
@@ -32,17 +33,18 @@ const EditPrescription = () => {
           }
         );
         console.log("Fetched prescription data:", response.data); // Debugging log
-        setForm(response.data);
+        setForm(response.data); // Populate the form with fetched prescription data
       } catch (error) {
         console.error("Error fetching prescription:", error);
-        setError("Error fetching prescription");
+        setError("Error fetching prescription"); // Set error if API call fails
       }
     };
 
-    fetchPrescription();
-  }, [id, token]);
+    fetchPrescription(); // Call function to fetch prescription data
+  }, [id, token]); // Dependency array ensures this effect runs when id or token changes
 
   const handleChange = (e) => {
+    // Handle changes in text input fields
     setForm({
       ...form,
       [e.target.name]: e.target.value,
@@ -50,6 +52,7 @@ const EditPrescription = () => {
   };
 
   const handleDoctorChange = (doctor_id) => {
+    // Handle change for doctor selection from dropdown
     setForm({
       ...form,
       doctor_id,
@@ -57,7 +60,7 @@ const EditPrescription = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevent default form submission
 
     // Convert necessary fields to numbers before submitting
     const payload = {
@@ -80,18 +83,19 @@ const EditPrescription = () => {
       );
 
       console.log("API Response:", response.data); // Debugging log
-      navigate(`/patient/${form.patient_id}`); // Navigate back after success
+      navigate(`/patient/${form.patient_id}`); // Navigate to the patient's page after successful update
     } catch (error) {
       console.error("Error updating prescription:", error);
 
+      // Handle error response from API
       if (error.response) {
         console.error(
           "Full API error response:",
           JSON.stringify(error.response.data, null, 2)
         );
-        setError(error.response.data.error || "Error updating prescription");
+        setError(error.response.data.error || "Error updating prescription"); // Display API error message
       } else {
-        setError("Network error or no response from server.");
+        setError("Network error or no response from server."); // Display error if no response from the server
       }
     }
   };
@@ -99,7 +103,7 @@ const EditPrescription = () => {
   return (
     <Container className="create-form-container my-5">
       <h1>Edit Prescription</h1>
-      {error && <Alert variant="danger">{error}</Alert>}
+      {error && <Alert variant="danger">{error}</Alert>} {/* Display error message if exists */}
       <Form onSubmit={handleSubmit} className="create-form p-4 rounded shadow">
         <Form.Group controlId="formPatientId" className="mb-3">
           <Form.Label>Patient ID</Form.Label>
@@ -115,7 +119,7 @@ const EditPrescription = () => {
           <Form.Label>Doctor</Form.Label>
           <DoctorDropDown
             selectedDoctorId={form.doctor_id}
-            onDoctorChange={handleDoctorChange}
+            onDoctorChange={handleDoctorChange} // Pass doctor selection handler to the dropdown
           />
         </Form.Group>
 
@@ -126,7 +130,7 @@ const EditPrescription = () => {
             placeholder="Enter medication"
             name="medication"
             value={form.medication}
-            onChange={handleChange}
+            onChange={handleChange} // Handle changes for medication field
             required
           />
         </Form.Group>
@@ -138,7 +142,7 @@ const EditPrescription = () => {
             placeholder="Enter dosage"
             name="dosage"
             value={form.dosage}
-            onChange={handleChange}
+            onChange={handleChange} // Handle changes for dosage field
             required
           />
         </Form.Group>
@@ -150,7 +154,7 @@ const EditPrescription = () => {
             placeholder="Enter start date (ddmmyy)"
             name="start_date"
             value={form.start_date}
-            onChange={handleChange}
+            onChange={handleChange} // Handle changes for start date field
             required
           />
         </Form.Group>
@@ -162,7 +166,7 @@ const EditPrescription = () => {
             placeholder="Enter end date (ddmmyy)"
             name="end_date"
             value={form.end_date}
-            onChange={handleChange}
+            onChange={handleChange} // Handle changes for end date field
             required
           />
         </Form.Group>

@@ -3,40 +3,42 @@ import axios from 'axios';
 import { useLocation, useNavigate } from "react-router-dom";
 import { Card, Button, Container, Row, Col, Alert, Form, Pagination } from 'react-bootstrap';
 import { useAuth } from '../../utils/useAuth';
-import patientImage from '../../images/patient.png'; // Importing the image
+import patientImage from '../../images/patient.png'; // Importing the image for patient cards
 import '../../styles/Patients.scss';
 
 const Patients = () => {
-    const [patients, setPatients] = useState([]);
-    const [filteredPatients, setFilteredPatients] = useState([]);
-    const [searchQuery, setSearchQuery] = useState('');
-    const { token } = useAuth();
-    const navigate = useNavigate();
+    const [patients, setPatients] = useState([]); // State for storing all patients
+    const [filteredPatients, setFilteredPatients] = useState([]); // State for storing filtered patients
+    const [searchQuery, setSearchQuery] = useState(''); // State for search query
+    const { token } = useAuth(); // Get the token from the auth context
+    const navigate = useNavigate(); // Hook for navigation
 
     // Pagination state
-    const [currentPage, setCurrentPage] = useState(1);
-    const patientsPerPage = 8; // Maximum number of patients per page
+    const [currentPage, setCurrentPage] = useState(1); // Track the current page
+    const patientsPerPage = 8; // Set the maximum number of patients per page
 
-    const { state } = useLocation();
-    const successMessage = state?.success || null;
+    const { state } = useLocation(); // Get success message from location state
+    const successMessage = state?.success || null; // Set the success message if available
 
+    // Fetch patients from API
     const getPatients = async () => {
         try {
             const response = await axios.get('https://fed-medical-clinic-api.vercel.app/patients', {
                 headers: {
-                    Authorization: `Bearer ${token}`
+                    Authorization: `Bearer ${token}` // Authorization header for API request
                 }
             });
-            setPatients(response.data);
+            setPatients(response.data); // Set patients list from response
             setFilteredPatients(response.data); // Set both full and filtered list initially
         } catch (error) {
-            console.error('Error fetching patients:', error);
+            console.error('Error fetching patients:', error); // Log any error
         }
     };
 
+    // Handle search input change and filter patients by name or phone
     const handleSearchChange = (e) => {
         const query = e.target.value.toLowerCase();
-        setSearchQuery(query);
+        setSearchQuery(query); // Update search query
 
         // Filter patients by first name, last name, or phone number
         const filtered = patients.filter(patient => 
@@ -45,27 +47,26 @@ const Patients = () => {
             patient.phone.includes(query)
         );
 
-        // Set the filtered patients to the state
-        setFilteredPatients(filtered);
-
-        // Reset to first page whenever the search query changes
-        setCurrentPage(1);
+        setFilteredPatients(filtered); // Set filtered patients
+        setCurrentPage(1); // Reset to first page whenever the search query changes
     };
 
+    // Handle page change for pagination
     const handlePageChange = (pageNumber) => {
         setCurrentPage(pageNumber);
     };
 
+    // Fetch patients on component mount
     useEffect(() => {
         getPatients();
-    }, [token]);
+    }, [token]); // Re-fetch patients if the token changes
 
     // Paginate the filteredPatients
     const indexOfLastPatient = currentPage * patientsPerPage;
     const indexOfFirstPatient = indexOfLastPatient - patientsPerPage;
     const currentPatients = filteredPatients.slice(indexOfFirstPatient, indexOfLastPatient);
 
-    // Pagination logic
+    // Pagination logic: calculate total pages and generate page numbers
     const totalPages = Math.ceil(filteredPatients.length / patientsPerPage);
     const pageNumbers = [];
 
@@ -75,7 +76,7 @@ const Patients = () => {
 
     return (
         <Container className="my-4">
-            {successMessage && <Alert variant="info">{successMessage}</Alert>}
+            {successMessage && <Alert variant="info">{successMessage}</Alert>} {/* Display success message if exists */}
             <h1 className="text-center mb-4">Patients</h1>
             <Row className="mb-3">
                 <Col className="text-end">
@@ -89,7 +90,7 @@ const Patients = () => {
                     type="text"
                     placeholder="Search by Name or Phone"
                     value={searchQuery}
-                    onChange={handleSearchChange}
+                    onChange={handleSearchChange} // Update search query on change
                     className="rounded-3 "
                 />
             </Form.Group>
@@ -111,7 +112,7 @@ const Patients = () => {
                     ))
                 ) : (
                     <Col className="text-center">
-                        <p>No patients found matching your search.</p>
+                        <p>No patients found matching your search.</p> {/* Show message if no patients match search */}
                     </Col>
                 )}
             </Row>
@@ -122,20 +123,20 @@ const Patients = () => {
                     <Pagination>
                         <Pagination.Prev 
                             onClick={() => handlePageChange(currentPage - 1)} 
-                            disabled={currentPage === 1}
+                            disabled={currentPage === 1} // Disable if on the first page
                         />
                         {pageNumbers.map(number => (
                             <Pagination.Item 
                                 key={number} 
-                                active={number === currentPage} 
-                                onClick={() => handlePageChange(number)}
+                                active={number === currentPage} // Highlight current page number
+                                onClick={() => handlePageChange(number)} // Change page on click
                             >
                                 {number}
                             </Pagination.Item>
                         ))}
                         <Pagination.Next 
                             onClick={() => handlePageChange(currentPage + 1)} 
-                            disabled={currentPage === totalPages}
+                            disabled={currentPage === totalPages} // Disable if on the last page
                         />
                     </Pagination>
                 </Col>

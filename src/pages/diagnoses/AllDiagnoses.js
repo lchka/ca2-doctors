@@ -11,9 +11,9 @@ const AllDiagnoses = () => {
   const [patient, setPatient] = useState(null);
   const [diagnoses, setDiagnoses] = useState([]);
   const [error, setError] = useState(null);
-  const [expandedPrescriptions, setExpandedPrescriptions] = useState({});
-  const [currentPage, setCurrentPage] = useState(1);
-  const diagnosesPerPage = 4;
+  const [expandedPrescriptions, setExpandedPrescriptions] = useState({}); // For toggling prescription details
+  const [currentPage, setCurrentPage] = useState(1); // For pagination
+  const diagnosesPerPage = 4; // Number of diagnoses per page
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -82,6 +82,7 @@ const AllDiagnoses = () => {
   }, [id, token]);
 
   const handlePrescriptionToggle = (prescriptionId) => {
+    // Toggle the visibility of prescription details
     setExpandedPrescriptions((prevState) => ({
       ...prevState,
       [prescriptionId]: !prevState[prescriptionId],
@@ -90,6 +91,7 @@ const AllDiagnoses = () => {
 
   const handleDeleteDiagnosis = async (diagnosisId) => {
     try {
+      // Delete the diagnosis from the database
       await axios.delete(
         `https://fed-medical-clinic-api.vercel.app/diagnoses/${diagnosisId}`,
         {
@@ -107,6 +109,7 @@ const AllDiagnoses = () => {
 
   const handleDeletePrescription = async (prescriptionId) => {
     try {
+      // Delete the prescription from the database
       await axios.delete(
         `https://fed-medical-clinic-api.vercel.app/prescriptions/${prescriptionId}`,
         {
@@ -134,9 +137,10 @@ const AllDiagnoses = () => {
   const indexOfFirstDiagnosis = indexOfLastDiagnosis - diagnosesPerPage;
   const currentDiagnoses = diagnoses.slice(indexOfFirstDiagnosis, indexOfLastDiagnosis);
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const paginate = (pageNumber) => setCurrentPage(pageNumber); // Update the current page
 
   const formatDate = (dateString) => {
+    // Format the date string to a more readable format
     if (typeof dateString !== 'string') {
       dateString = dateString.toString();
     }
@@ -149,7 +153,7 @@ const AllDiagnoses = () => {
 
   return (
     <Container className="mt-4">
-      {error && <Alert variant="danger">{error}</Alert>}
+      {error && <Alert variant="danger">{error}</Alert>} {/* Display error if any */}
       <Row>
         <Col md={12}>
           <div className="d-flex justify-content-between align-items-center mb-3">

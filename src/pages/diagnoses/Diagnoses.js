@@ -4,6 +4,17 @@ import { useNavigate } from "react-router-dom";
 import { Card, Button, Container, Row, Col, Alert } from 'react-bootstrap';
 import { useAuth } from '../../utils/useAuth';
 
+
+
+
+
+//  not used
+
+
+
+
+
+
 const Diagnoses = () => {
     const [diagnoses, setDiagnoses] = useState([]);
     const [error, setError] = useState(null);

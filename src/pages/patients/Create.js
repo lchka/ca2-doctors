@@ -1,9 +1,9 @@
-import { useState } from "react";
-import axios from 'axios';
-import { useNavigate } from "react-router-dom";
-import { Form, Button, Container, Alert } from 'react-bootstrap';
-import { useAuth } from '../../utils/useAuth';
-import '../../styles/CreateForm.scss'; // Import the SCSS file for consistent form styling
+import { useState } from "react"; // Import React hooks for state management
+import axios from 'axios'; // Import axios for making HTTP requests
+import { useNavigate } from "react-router-dom"; // Import useNavigate hook for routing
+import { Form, Button, Container, Alert } from 'react-bootstrap'; // Import Bootstrap components for form elements and alerts
+import { useAuth } from '../../utils/useAuth'; // Import custom authentication hook
+import '../../styles/CreateForm.scss'; // Import SCSS file for styling
 
 const Create = () => {
     const [form, setForm] = useState({
@@ -13,12 +13,13 @@ const Create = () => {
         phone: '',
         date_of_birth: '',
         address: ''
-    });
-    const [validationErrors, setValidationErrors] = useState({});
-    const [error, setError] = useState(null);
-    const navigate = useNavigate();
-    const { token } = useAuth();
+    }); // State to store form data
+    const [validationErrors, setValidationErrors] = useState({}); // State to store form validation errors
+    const [error, setError] = useState(null); // State to store API error messages
+    const navigate = useNavigate(); // Hook to navigate between pages
+    const { token } = useAuth(); // Get authentication token
 
+    // Handle form input change
     const handleChange = (e) => {
         setForm({
             ...form,
@@ -26,6 +27,7 @@ const Create = () => {
         });
     };
 
+    // Validate form inputs before submitting
     const validateForm = () => {
         const errors = {};
         if (!form.email.includes('@')) {
@@ -37,35 +39,36 @@ const Create = () => {
         if (!/^\d{6}$/.test(form.date_of_birth)) {
             errors.date_of_birth = "Date of birth must be in ddmmyy format";
         }
-        return errors;
+        return errors; // Return errors object if there are any validation issues
     };
 
+    // Handle form submission
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        console.log("Form submitted");
-        const errors = validateForm();
+        e.preventDefault(); // Prevent default form submission
+        const errors = validateForm(); // Validate form inputs
         if (Object.keys(errors).length > 0) {
-            setValidationErrors(errors);
-            console.error("Validation errors:", errors);
-            return;
+            setValidationErrors(errors); // Set validation errors
+            return; // Stop submission if there are errors
         }
         try {
+            // Make API request to create new patient
             await axios.post('https://fed-medical-clinic-api.vercel.app/patients', form, {
                 headers: {
-                    Authorization: `Bearer ${token}`
+                    Authorization: `Bearer ${token}` // Send authentication token with request
                 }
             });
-            navigate('/patients', { state: { success: 'Patient successfully created!' } }); // Navigate to "Our Patients" page after successful creation
+            // Redirect to the patients page with a success message
+            navigate('/patients', { state: { success: 'Patient successfully created!' } });
         } catch (err) {
-            console.error("Error creating patient:", err);
+            // Handle errors from the API
             if (err.response && err.response.data && err.response.data.message) {
                 if (err.response.data.message.includes("email already exists")) {
-                    setValidationErrors({ email: "Email already exists" });
+                    setValidationErrors({ email: "Email already exists" }); // Handle email duplication error
                 } else {
-                    setError(err.response.data.message);
+                    setError(err.response.data.message); // Display generic error message
                 }
             } else {
-                setError('Error creating patient');
+                setError('Error creating patient'); // Display default error message
             }
         }
     };
@@ -73,8 +76,10 @@ const Create = () => {
     return (
         <Container className="create-form-container my-5">
             <h1>Create Patient</h1>
+            {/* Show error alert if any error occurs */}
             {error && <Alert variant="danger">{error}</Alert>}
             <Form onSubmit={handleSubmit} className="create-form p-4 rounded shadow">
+                {/* First Name Field */}
                 <Form.Group controlId="formFirstName" className="mb-3">
                     <Form.Label>First Name</Form.Label>
                     <Form.Control
@@ -87,6 +92,7 @@ const Create = () => {
                     />
                 </Form.Group>
 
+                {/* Last Name Field */}
                 <Form.Group controlId="formLastName" className="mb-3">
                     <Form.Label>Last Name</Form.Label>
                     <Form.Control
@@ -99,6 +105,7 @@ const Create = () => {
                     />
                 </Form.Group>
 
+                {/* Email Field with Validation */}
                 <Form.Group controlId="formEmail" className="mb-3">
                     <Form.Label>Email</Form.Label>
                     <Form.Control
@@ -111,10 +118,11 @@ const Create = () => {
                         required
                     />
                     <Form.Control.Feedback type="invalid">
-                        {validationErrors.email}
+                        {validationErrors.email} {/* Display email validation error */}
                     </Form.Control.Feedback>
                 </Form.Group>
 
+                {/* Phone Number Field with Validation */}
                 <Form.Group controlId="formPhone" className="mb-3">
                     <Form.Label>Phone</Form.Label>
                     <Form.Control
@@ -128,10 +136,11 @@ const Create = () => {
                         required
                     />
                     <Form.Control.Feedback type="invalid">
-                        {validationErrors.phone}
+                        {validationErrors.phone} {/* Display phone validation error */}
                     </Form.Control.Feedback>
                 </Form.Group>
 
+                {/* Date of Birth Field with Validation */}
                 <Form.Group controlId="formDateOfBirth" className="mb-3">
                     <Form.Label>Date of Birth</Form.Label>
                     <Form.Control
@@ -144,10 +153,11 @@ const Create = () => {
                         required
                     />
                     <Form.Control.Feedback type="invalid">
-                        {validationErrors.date_of_birth}
+                        {validationErrors.date_of_birth} {/* Display date of birth validation error */}
                     </Form.Control.Feedback>
                 </Form.Group>
 
+                {/* Address Field */}
                 <Form.Group controlId="formAddress" className="mb-3">
                     <Form.Label>Address</Form.Label>
                     <Form.Control
@@ -160,6 +170,7 @@ const Create = () => {
                     />
                 </Form.Group>
 
+                {/* Submit Button */}
                 <Button variant="primary" type="submit" className="w-100">
                     Create
                 </Button>
@@ -168,4 +179,4 @@ const Create = () => {
     );
 };
 
-export default Create;
+export default Create; // Export the Create component

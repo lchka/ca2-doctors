@@ -4,6 +4,15 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Card, Container, Alert, Button } from 'react-bootstrap';
 import { useAuth } from "../../utils/useAuth";
 
+
+
+
+//not used
+
+
+
+
+
 const SingleDiagnose = () => {
     const { token } = useAuth();
     const [diagnosis, setDiagnosis] = useState(null);
