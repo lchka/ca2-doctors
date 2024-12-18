@@ -153,22 +153,79 @@ const SinglePatient = () => {
 
   const handleDeletePatient = async () => {
     try {
-      await axios.delete(
-        `https://fed-medical-clinic-api.vercel.app/patients/${id}`,
+      // Fetch and delete all associated prescriptions
+      const prescriptionsResponse = await axios.get(
+        `https://fed-medical-clinic-api.vercel.app/prescriptions?patient_id=${id}`,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
-          },
+            Authorization: `Bearer ${token}`
+          }
         }
       );
-      navigate('/patients', { state: { success: 'Patient successfully deleted!' } }); // Redirect to patients list after deletion with success message
-    } catch (error) {
-      console.error("Error deleting patient:", error);
-      if (error.response && error.response.status === 409) {
-        setError("Cannot delete patient. There are related records that must be deleted first.");
-      } else {
-        setError("Error deleting patient");
+      const prescriptions = prescriptionsResponse.data;
+      for (const prescription of prescriptions) {
+        await axios.delete(
+          `https://fed-medical-clinic-api.vercel.app/prescriptions/${prescription.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
       }
+  
+      // Fetch and delete all associated appointments
+      const appointmentsResponse = await axios.get(
+        `https://fed-medical-clinic-api.vercel.app/appointments?patient_id=${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+      const appointments = appointmentsResponse.data;
+      for (const appointment of appointments) {
+        await axios.delete(
+          `https://fed-medical-clinic-api.vercel.app/appointments/${appointment.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+      }
+  
+      // Fetch and delete all associated diagnoses
+      const diagnosesResponse = await axios.get(
+        `https://fed-medical-clinic-api.vercel.app/diagnoses?patient_id=${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+      const diagnoses = diagnosesResponse.data;
+      for (const diagnosis of diagnoses) {
+        await axios.delete(
+          `https://fed-medical-clinic-api.vercel.app/diagnoses/${diagnosis.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+      }
+  
+      // Delete the patient
+      await axios.delete(`https://fed-medical-clinic-api.vercel.app/patients/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      navigate('/patients', { state: { success: 'Patient and all associated data successfully deleted!' } });
+    } catch (error) {
+      console.error('Error deleting patient or associated data:', error);
+      setError(error.response?.data?.message || 'Error deleting patient or associated data');
     }
   };
 
@@ -328,7 +385,7 @@ const SinglePatient = () => {
                                   <div>
                                     {/* Edit Prescription Button */}
                                     <Button
-                                    className="addP text-uppercase fw-semibold "
+                                    className="addP mx-2 text-uppercase fw-semibold "
                                       variant="warning"
                                       onClick={() =>
                                         navigate(
@@ -344,7 +401,7 @@ const SinglePatient = () => {
                                       onClick={() =>
                                         handleDeletePrescription(prescription.id)
                                       }
-                                      className=" text-uppercase fw-semibold"
+                                      className=" mx-2 text-uppercase fw-semibold"
                                     >
                                       Delete Prescription
                                     </Button>

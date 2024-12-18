@@ -32,15 +32,79 @@ const SingleDoctor = () => {
 
     const handleDelete = async () => {
         try {
+            // Fetch and delete all associated appointments
+            const appointmentsResponse = await axios.get(
+                `https://fed-medical-clinic-api.vercel.app/appointments?doctor_id=${id}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+            const appointments = appointmentsResponse.data;
+            for (const appointment of appointments) {
+                await axios.delete(
+                    `https://fed-medical-clinic-api.vercel.app/appointments/${appointment.id}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    }
+                );
+            }
+    
+            // Fetch and delete all associated prescriptions
+            const prescriptionsResponse = await axios.get(
+                `https://fed-medical-clinic-api.vercel.app/prescriptions?doctor_id=${id}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+            const prescriptions = prescriptionsResponse.data;
+            for (const prescription of prescriptions) {
+                await axios.delete(
+                    `https://fed-medical-clinic-api.vercel.app/prescriptions/${prescription.id}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    }
+                );
+            }
+    
+            // Fetch and delete all associated diagnoses
+            const diagnosesResponse = await axios.get(
+                `https://fed-medical-clinic-api.vercel.app/diagnoses?doctor_id=${id}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+            const diagnoses = diagnosesResponse.data;
+            for (const diagnosis of diagnoses) {
+                await axios.delete(
+                    `https://fed-medical-clinic-api.vercel.app/diagnoses/${diagnosis.id}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    }
+                );
+            }
+    
+            // Delete the doctor
             await axios.delete(`https://fed-medical-clinic-api.vercel.app/doctors/${id}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
-            navigate('/doctors', { state: { success: 'Doctor successfully deleted!' } });
+            navigate('/doctors', { state: { success: 'Doctor and all associated data successfully deleted!' } });
         } catch (error) {
-            console.error('Error deleting doctor:', error);
-            setError(error.response?.data?.message || 'Error deleting doctor');
+            console.error('Error deleting doctor or associated data:', error);
+            setError(error.response?.data?.message || 'Error deleting doctor or associated data');
         }
     };
 

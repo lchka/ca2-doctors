@@ -79,7 +79,7 @@ const Patients = () => {
             <h1 className="text-center mb-4">Patients</h1>
             <Row className="mb-3">
                 <Col className="text-end">
-                    <Button variant="success" onClick={() => navigate('/patients/create')}>Add Patient</Button>
+                    <Button className="btn-view-details rounded-3 text-uppercase fw-semibold" onClick={() => navigate('/patients/create')}>Create Patient</Button>
                 </Col>
             </Row>
 
