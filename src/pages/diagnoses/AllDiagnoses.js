@@ -46,11 +46,11 @@ const AllDiagnoses = () => {
         const filteredDiagnoses = diagnosesData.filter((d) => d.patient_id === parseInt(id));
 
         // Fetch prescriptions for each diagnosis
-        const prescriptions = await Promise.all(
+        const diagnosesWithPrescriptions = await Promise.all(
           filteredDiagnoses.map(async (d) => {
             try {
               const prescriptionResponse = await axios.get(
-                `https://fed-medical-clinic-api.vercel.app/prescriptions?diagnosis_id=${d.id}`,
+                `https://fed-medical-clinic-api.vercel.app/prescriptions?diagnosis_id=${d.id}&patient_id=${id}`,
                 {
                   headers: {
                     Authorization: `Bearer ${token}`,
@@ -58,9 +58,9 @@ const AllDiagnoses = () => {
                 }
               );
 
-              // Filter prescriptions to ensure they match the patient_id
+              // Filter prescriptions to ensure they match both the patient_id and diagnosis_id
               const prescriptionData = prescriptionResponse.data.filter(
-                (p) => p.patient_id === parseInt(id)
+                (p) => p.patient_id === parseInt(id) && p.diagnosis_id === d.id
               );
 
               return { ...d, prescriptions: prescriptionData };
@@ -71,7 +71,7 @@ const AllDiagnoses = () => {
           })
         );
 
-        setDiagnoses(prescriptions);
+        setDiagnoses(diagnosesWithPrescriptions);
       } catch (error) {
         console.error("Error fetching patient details, diagnoses, or prescriptions:", error);
         setError("Error fetching patient details, diagnoses, or prescriptions");

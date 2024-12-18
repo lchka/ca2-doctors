@@ -108,9 +108,34 @@ const SinglePatient = () => {
       [prescriptionId]: !prevState[prescriptionId],
     }));
   };
-
   const handleDeleteDiagnosis = async (diagnosisId) => {
     try {
+      // Fetch and delete all associated prescriptions for the diagnosis
+      const prescriptionsResponse = await axios.get(
+        `https://fed-medical-clinic-api.vercel.app/prescriptions?diagnosis_id=${diagnosisId}&patient_id=${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const prescriptions = prescriptionsResponse.data.filter(
+        (prescription) =>
+          prescription.patient_id === parseInt(id) &&
+          prescription.diagnosis_id === diagnosisId
+      );
+      for (const prescription of prescriptions) {
+        await axios.delete(
+          `https://fed-medical-clinic-api.vercel.app/prescriptions/${prescription.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+      }
+  
+      // Delete the diagnosis
       await axios.delete(
         `https://fed-medical-clinic-api.vercel.app/diagnoses/${diagnosisId}`,
         {
@@ -122,10 +147,14 @@ const SinglePatient = () => {
       setDiagnoses(
         diagnoses.filter((diagnosis) => diagnosis.id !== diagnosisId)
       );
-      setSuccess("Diagnosis deleted successfully.");
+      setSuccess("Diagnosis and associated prescriptions deleted successfully.");
     } catch (error) {
       console.error("Error deleting diagnosis:", error);
-      setError("Error deleting diagnosis");
+      if (error.response && error.response.status === 409) {
+        setError("Cannot delete diagnosis due to existing constraints.");
+      } else {
+        setError("Error deleting diagnosis");
+      }
     }
   };
 

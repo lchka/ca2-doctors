@@ -7,9 +7,9 @@ import DoctorDropDown from "../../components/DoctorDropDown";
 import "../../styles/CreateForm.scss"; // Import the SCSS file for consistent form styling
 
 const Create = () => {
-    const { token } = useAuth(); // Get the authentication token
-    const navigate = useNavigate(); // Navigation after form submission
-    const location = useLocation(); // Access the current URL location
+    const { token } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
 
     // Get the diagnosis_id and patient_id from the URL query parameters
     const queryParams = new URLSearchParams(location.search);
@@ -21,9 +21,9 @@ const Create = () => {
         dosage: "",
         start_date: "", // Expecting 6 digits: ddmmyy
         end_date: "",   // Expecting 6 digits: ddmmyy
-        diagnosis_id: diagnosis_id || "", // Pre-fill diagnosis_id if available
-        patient_id: patient_id || "",     // Pre-fill patient_id if available
-        doctor_id: "", // Initially no doctor selected
+        diagnosis_id: diagnosis_id || "",
+        patient_id: patient_id || "",
+        doctor_id: "",
     });
 
     const [error, setError] = useState(null); // To store API error messages
@@ -31,7 +31,6 @@ const Create = () => {
     // Utility to validate dates (6 digits only)
     const isValidDate = (date) => /^\d{6}$/.test(date);
 
-    // Handle input field changes, especially for date fields (sanitize input)
     const handleChange = (e) => {
         let { name, value } = e.target;
 
@@ -46,19 +45,17 @@ const Create = () => {
         });
     };
 
-    // Handle doctor selection from the dropdown
     const handleDoctorChange = (doctor_id) => {
         setForm({
             ...form,
-            doctor_id, // Set selected doctor ID
+            doctor_id,
         });
     };
 
-    // Handle form submission
     const handleSubmit = async (e) => {
-        e.preventDefault(); // Prevent default form submission
+        e.preventDefault();
     
-        // Ensure ID fields are numbers (necessary for backend)
+        // Ensure ID fields are numbers
         const payload = {
             ...form,
             patient_id: Number(form.patient_id),
@@ -76,16 +73,15 @@ const Create = () => {
     
         try {
             const response = await axios.post(
-                "https://fed-medical-clinic-api.vercel.app/prescriptions", // API URL
-                payload, // The payload to send
+                "https://fed-medical-clinic-api.vercel.app/prescriptions",
+                payload,
                 {
-                    headers: { Authorization: `Bearer ${token}` }, // Send token for authentication
+                    headers: { Authorization: `Bearer ${token}` },
                 }
             );
     
             console.log("API Response:", response.data); // Debugging
     
-            // Navigate to the patient details page with a success message
             navigate(`/patient/${payload.patient_id}`, {
                 state: { success: "Prescription successfully created!" },
             });
@@ -100,13 +96,13 @@ const Create = () => {
             }
         }
     };
+    
 
     return (
         <Container className="create-form-container my-5">
             <h1>Create Prescription</h1>
-            {error && <Alert variant="danger">{error}</Alert>} {/* Show error message if any */}
+            {error && <Alert variant="danger">{error}</Alert>}
             <Form onSubmit={handleSubmit} className="create-form p-4 rounded shadow">
-                {/* Medication Input */}
                 <Form.Group controlId="formMedication" className="mb-3">
                     <Form.Label>Medication</Form.Label>
                     <Form.Control
@@ -119,7 +115,6 @@ const Create = () => {
                     />
                 </Form.Group>
 
-                {/* Dosage Input */}
                 <Form.Group controlId="formDosage" className="mb-3">
                     <Form.Label>Dosage</Form.Label>
                     <Form.Control
@@ -132,7 +127,6 @@ const Create = () => {
                     />
                 </Form.Group>
 
-                {/* Start Date Input */}
                 <Form.Group controlId="formStartDate" className="mb-3">
                     <Form.Label>Start Date</Form.Label>
                     <Form.Control
@@ -146,7 +140,6 @@ const Create = () => {
                     />
                 </Form.Group>
 
-                {/* End Date Input */}
                 <Form.Group controlId="formEndDate" className="mb-3">
                     <Form.Label>End Date</Form.Label>
                     <Form.Control
@@ -160,7 +153,6 @@ const Create = () => {
                     />
                 </Form.Group>
 
-                {/* Diagnosis ID (read-only) */}
                 <Form.Group controlId="formDiagnosisId" className="mb-3">
                     <Form.Label>Diagnosis ID</Form.Label>
                     <Form.Control
@@ -171,7 +163,6 @@ const Create = () => {
                     />
                 </Form.Group>
 
-                {/* Patient ID (read-only) */}
                 <Form.Group controlId="formPatientId" className="mb-3">
                     <Form.Label>Patient ID</Form.Label>
                     <Form.Control
@@ -182,16 +173,14 @@ const Create = () => {
                     />
                 </Form.Group>
 
-                {/* Doctor Dropdown */}
                 <Form.Group controlId="formDoctorId" className="mb-3">
                     <Form.Label>Doctor</Form.Label>
                     <DoctorDropDown
                         selectedDoctorId={form.doctor_id}
-                        onDoctorChange={handleDoctorChange} // Handle doctor selection
+                        onDoctorChange={handleDoctorChange}
                     />
                 </Form.Group>
 
-                {/* Submit Button */}
                 <Button variant="primary" type="submit" className="w-100">
                     Create
                 </Button>
@@ -200,4 +189,4 @@ const Create = () => {
     );
 };
 
-export default Create; // Export the Create component for use elsewhere in the app
+export default Create;
